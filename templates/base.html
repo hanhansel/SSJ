@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-width=1, viewport-fit=cover"/>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>SSJ</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/css/tabler.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Make Tabler use Inter as its main font */
+            --tblr-font-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
+        }
+        body, input, button, select, textarea {
+            font-family: 'Inter', sans-serif !important;
+        }
+        
+        /* GLOBAL CLEAN UI CSS FOR LISTS & DASHBOARD */
+        .page-header { display: none !important; }
+        .page-body { margin-top: 1rem !important; }
+        .page-container-clean { padding: 1.5rem 32px; max-width: 1600px; margin-left: 0; }
+        .clean-card { background: #ffffff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.04); padding: 24px; margin-bottom: 24px;}
+        .page-title-clean { font-weight: 800; font-size: 32px; letter-spacing: -1px; color: #1d1d1f; margin: 0; }
+        .table-clean { width: 100%; border-collapse: collapse; }
+        .table-clean th { background: #f5f5f7; color: #86868b; font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; border: none; padding: 14px 16px; text-align: left; }
+        .table-clean th:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+        .table-clean th:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+        .table-clean td { vertical-align: middle; font-size: 14px; color: #1d1d1f; border-bottom: 1px solid #f5f5f7; padding: 16px; font-weight: 500; }
+        .table-clean tbody tr:hover td { background-color: #fafafa; }
+        
+        .status-badge { padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 12px; display: inline-block; white-space: nowrap; }
+        .status-online { background: #dcfce7; color: #166534; }
+        .status-onhold { background: #fef3c7; color: #d97706; }
+        .status-completed { background: #dbeafe; color: #1e3a8a; }
+        .status-default { background: #f1f5f9; color: #475569; }
+        
+        /* GLOBAL CLEAN UI BUTTON PALETTE (Colours & Corners Only, No Sizes/Animation) */
+        .btn-mac-base {
+            border-radius: 10px;
+            font-weight: 600;
+            border: 1px solid transparent;
+            transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .btn-mac-primary {
+            background-color: #0071e3 !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(0, 113, 227, 0.2);
+        }
+        .btn-mac-primary:hover { background-color: #005bb5 !important; }
+        
+        .btn-mac-success {
+            background-color: #10b981 !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+        }
+        .btn-mac-success:hover { background-color: #059669 !important; }
+        
+        .btn-mac-danger {
+            background-color: #ef4444 !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+        }
+        .btn-mac-danger:hover { background-color: #dc2626 !important; }
+        
+        .btn-mac-secondary {
+            background-color: #f5f5f7 !important;
+            color: #1d1d1f !important;
+            border: 1px solid #d2d2d7 !important;
+        }
+        .btn-mac-secondary:hover { background-color: #e5e5ea !important; }
+
+        /* Default Icon Action Button (For Tables) */
+        .btn-action { background: transparent; color: #86868b; border: 1px solid transparent; padding: 8px 12px; border-radius: 8px; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; cursor: pointer;}
+        .btn-action:hover { background: #f5f5f7; color: #0071e3; }
+        .btn-action.text-danger:hover { color: #dc2626; background: #fee2e2; }
+        .btn-action.text-warning:hover { color: #d97706 !important; background: #fef3c7; }
+        .btn-action.text-success:hover { color: #16a34a !important; background: #dcfce7; }
+
+        /* RESPONSIVE FOR MOBILE */
+        .mobile-top-nav {
+            position: fixed; top: 0; left: 0; right: 0; height: 60px;
+            background: #0f172a; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            align-items: center; justify-content: space-between; padding: 0 20px; z-index: 99997;
+            display: none; /* hidden by default on desktop */
+        }
+        .nav-brand { font-weight: 800; font-size: 20px; color: #ffffff; letter-spacing: -0.5px; text-decoration: none; }
+        .nav-btn { background: transparent; border: none; font-size: 20px; color: #ffffff; cursor: pointer; padding: 5px; }
+
+        .mobile-menu {
+            position: fixed; top: 0; left: -280px; width: 280px; height: 100vh;
+            background: #ffffff; z-index: 99999; transition: left 0.3s ease;
+            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1); padding: 24px;
+        }
+        .mobile-menu.open { left: 0 !important; }
+        .menu-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5); z-index: 99998; display: none; opacity: 0; transition: opacity 0.3s ease;
+        }
+        .menu-overlay.open { display: block !important; opacity: 1 !important; }
+        
+        .menu-user { margin-bottom: 30px; border-bottom: 1px solid #f5f5f7; padding-bottom: 20px; }
+        .menu-user-name { font-weight: 700; font-size: 18px; color: #1d1d1f; }
+        .menu-user-role { font-size: 13px; color: #86868b; }
+        .menu-link { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 15px; color: #1d1d1f; text-decoration: none; padding: 12px 0; transition: 0.2s; }
+        .menu-link:hover, .menu-link:active { color: #0071e3; padding-left: 5px; }
+        .menu-link i { width: 24px; text-align: center; color: #86868b; }
+
+        @media (max-width: 768px) {
+            .sidebar, .navbar, .page-header { display: none !important; }
+            .page-wrapper { margin-left: 0 !important; padding-top: 0 !important; }
+            .page-body { margin-top: 0 !important; padding: 0 !important; }
+            body { padding-top: 60px; }
+            
+            .mobile-top-nav { display: flex !important; }
+            
+            .page-title-clean { font-size: 22px !important; }
+            .clean-card { padding: 16px !important; }
+            
+            /* Table overrides for mobile */
+            .table-clean, .excel-table, table { display: block; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+            
+            /* Container padding adjustments */
+            .container-fluid, .container-xl { padding-left: 12px !important; padding-right: 12px !important; }
+        }
+    </style>
+    <script src="{{ url_for('static', filename='assets/js/password-reveal.js') }}" defer></script>
+</head>
+<body class="layout-fluid">
+    <!-- MOBILE TOP NAV (Universally included) -->
+    <div class="mobile-top-nav d-print-none">
+        <button class="nav-btn" onclick="toggleMobileMenu()"><i class="fa-solid fa-bars"></i></button>
+        <a href="/" class="nav-brand">SSJ</a>
+        <div style="width: 30px;"></div> <!-- Spacer for centering -->
+    </div>
+
+    <!-- MOBILE MENU OFFCANVAS -->
+    <div class="menu-overlay d-print-none" id="mobileMenuOverlay" onclick="toggleMobileMenu()"></div>
+    <div class="mobile-menu d-print-none" id="globalMobileMenu">
+        {% if session.get('user_id') %}
+        <div class="menu-user">
+            <div class="menu-user-name">{{ session.get('user_name', 'User') }}</div>
+            <div class="menu-user-role">{{ session.get('role', 'User') }}</div>
+        </div>
+        <a href="{{ url_for('system.dashboard') }}" class="menu-link"><i class="fa-solid fa-house"></i> Dashboard</a>
+        {% if can('documents') %}<a href="{{ url_for('documents.list_docs') }}" class="menu-link"><i class="fa-solid fa-file-lines"></i> SVC & XPRJ Documents</a>{% endif %}
+        {% if can('scheduling') %}<a href="{{ url_for('scheduling.index') }}" class="menu-link"><i class="fa-solid fa-calendar-days"></i> Scheduling</a>{% endif %}
+        {% if can('storage') %}<a href="{{ url_for('system.clients') }}" class="menu-link"><i class="fa-solid fa-building"></i> Client Data</a>{% endif %}
+        {% if can('settings') %}<a href="{{ url_for('system.settings') }}" class="menu-link"><i class="fa-solid fa-gear"></i> Settings</a>{% endif %}
+        {% if can('access') %}<a href="{{ url_for('system.accounts') }}" class="menu-link"><i class="fa-solid fa-users-gear"></i> Access Management</a>{% endif %}
+        <a href="{{ url_for('auth.logout') }}" class="menu-link text-danger mt-4"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
+        {% endif %}
+    </div>
+
+    <div class="page">
+        {% include 'partials/sidebar.html' %}
+
+        <div class="page-wrapper">
+            <div class="page-header d-print-none">
+                <div class="container-xl">
+                    <div class="row g-2 align-items-center">
+                        <div class="col">
+                            <h2 class="page-title">
+                                {% block page_title %}Dashboard{% endblock %}
+                            </h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="page-body">
+                <div class="container-xl">
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-success alert-dismissible" role="alert">
+                                    <div class="d-flex">
+                                        <div><i class="fa-solid fa-check-circle me-2"></i></div>
+                                        <div>{{ message }}</div>
+                                    </div>
+                                    <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    {% block content %}{% endblock %}
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js"></script>
+    <script>
+    (function() {
+        const token = document.querySelector('meta[name="csrf-token"]').content;
+        function addCsrfField(form) {
+            if ((form.method || 'get').toLowerCase() === 'post' && !form.querySelector('[name="csrf_token"]')) {
+                const input = document.createElement('input');
+                input.type = 'hidden'; input.name = 'csrf_token'; input.value = token;
+                form.appendChild(input);
+            }
+        }
+        document.querySelectorAll('form').forEach(addCsrfField);
+        document.addEventListener('submit', event => addCsrfField(event.target));
+        const nativeFetch = window.fetch;
+        window.fetch = function(input, init = {}) {
+            const method = (init.method || 'GET').toUpperCase();
+            if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+                const headers = new Headers(init.headers || {});
+                headers.set('X-CSRFToken', token);
+                init = { ...init, headers };
+            }
+            return nativeFetch(input, init);
+        };
+    })();
+
+    function toggleMobileMenu() {
+        document.getElementById('globalMobileMenu').classList.toggle('open');
+        document.getElementById('mobileMenuOverlay').classList.toggle('open');
+    }
+
+    function printDocument(url) {
+        let iframe = document.getElementById('global-print-iframe');
+        if (iframe) {
+            iframe.remove();
+        }
+
+        iframe = document.createElement('iframe');
+        iframe.id = 'global-print-iframe';
+        iframe.style.position = 'fixed';
+        iframe.style.left = '-9999px';
+        iframe.style.top = '-9999px';
+        iframe.style.width = '1024px';
+        iframe.style.height = '768px';
+        iframe.style.border = 'none';
+        document.body.appendChild(iframe);
+
+        iframe.onload = function() {
+            try {
+                setTimeout(function() {
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                }, 200);
+            } catch (e) {
+                console.error('Print iframe error:', e);
+                window.open(url, '_blank');
+            }
+        };
+        iframe.src = url;
+    }
+    </script>
+</body>
+</html>

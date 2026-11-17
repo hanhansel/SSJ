@@ -1,0 +1,1061 @@
+{% extends "base.html" %}
+{% block page_title %}{{ doc.display_no }} — PRJ{% endblock %}
+
+{% block content %}
+<style>
+    .btn-apple-pill {
+        border-radius: 20px !important;
+        padding: 6px 18px !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .btn-apple-pill:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 113, 227, 0.25);
+    }
+
+    .table-info-aligned td {
+        vertical-align: top;
+        padding-top: 6px;
+        padding-bottom: 6px;
+    }
+
+    .table-info-aligned .info-label {
+        width: 1%;
+        white-space: nowrap;
+        color: #64748b;
+        font-weight: 600;
+        padding-right: 0;
+    }
+
+    .table-info-aligned .info-colon {
+        width: 16px;
+        text-align: center;
+        color: #94a3b8;
+        font-weight: 700;
+        padding-left: 2px;
+        padding-right: 2px;
+    }
+
+    .table-info-aligned .info-value {
+        padding-left: 6px;
+    }
+
+    .clean-card {
+        background: #ffffff;
+        border-radius: 14px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+        padding: 22px;
+        margin-bottom: 20px;
+    }
+
+    .btn-row-delete {
+        background: transparent;
+        border: none;
+        color: #ef4444;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 6px;
+        transition: all 0.15s ease;
+    }
+
+    .btn-row-delete:hover {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .item-table-input {
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 6px 10px;
+        font-size: 13.5px;
+        width: 100%;
+        transition: border-color 0.2s ease;
+    }
+
+    .item-table-input:focus {
+        border-color: #0071e3;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.1);
+    }
+
+    /* PHOTO LIGHTBOX (Shared with SVC/XPRJ) */
+    .photo-thumb-card {
+        width: 120px;
+        height: 120px;
+        border-radius: 12px;
+        overflow: hidden;
+        cursor: pointer;
+        border: 2px solid #e2e8f0;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+
+    .photo-thumb-card:hover {
+        transform: scale(1.05);
+        border-color: #0071e3;
+        box-shadow: 0 4px 15px rgba(0, 113, 227, 0.2);
+    }
+
+    .photo-thumb-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+</style>
+
+<div class="page-container-clean container-fluid" style="max-width: 1100px;">
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-3">
+            <a href="{{ url_for('documents.prj_list', storage='1' if is_completed else None) }}"
+                class="btn btn-sm btn-mac-secondary btn-apple-pill">
+                <i class="fa-solid fa-arrow-left me-1"></i> Back
+            </a>
+            <div>
+                <h1 class="page-title-clean font-monospace mb-0" style="font-size: 22px; line-height: 1.2;">{{
+                    doc.display_no }}</h1>
+                <small class="text-muted">Created on: {{ (doc.created_at | format_datetime) if doc.created_at
+                    else '-' }}</small>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="button"
+                onclick="printDocument('{{ url_for('documents.print_doc', doc_type='prj', doc_id=doc.id) }}')"
+                class="btn btn-mac-secondary btn-apple-pill">
+                <i class="fa-solid fa-print me-1"></i> Print PRJ
+            </button>
+            {% if can('documents') and not is_completed and request.args.get('storage') != '1' %}
+            <button type="button" id="btnToggleEdit" onclick="toggleEditMode()"
+                class="btn btn-mac-secondary btn-apple-pill">
+                <i class="fa-solid fa-pen-to-square me-1"></i> Edit
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ADMIN STATUS DROPDOWN SECTION (INLINE) -->
+    {% if can('documents') and not is_completed and request.args.get('storage') != '1' %}
+    <div class="clean-card mb-4 border-0 p-3" style="background: #f8fafc;">
+        {% set review_url = url_for('documents.review_doc', doc_type='prj', doc_id=doc.id) %}
+        <form method="POST" action="{{ review_url }}" data-status-form
+            class="d-flex align-items-start gap-3 m-0 flex-wrap">
+
+            <div class="d-flex flex-column gap-2">
+                <label class="small text-dark fw-bold mb-0" for="statusSelect" style="font-size: 13.5px;">
+                    <i class="fa-solid fa-arrows-rotate text-success me-1"></i> Change Status:
+                </label>
+                <div class="d-flex gap-2">
+                    <select name="status" id="statusSelect" class="form-select form-select-sm d-inline-block"
+                        style="border-radius: 20px; font-size: 13px; font-weight: 600; width: 190px; padding: 6px 16px; border-color: #cbd5e1;">
+                        {# Hold pauses Online work only; a held PRJ is resumed (Online) or voided. #}
+                        {% if doc.status == 'Hold' %}
+                        <option value="Hold" selected>Hold</option>
+                        <option value="Online">Online</option>
+                        {% else %}
+                        <option value="Online" {% if doc.status=='Online' %}selected{% endif %}>Online</option>
+                        <option value="Pending Approval" {% if doc.status=='Pending Approval' %}selected{% endif %}>Pending
+                            Approval</option>
+                        {% if doc.status == 'Online' %}
+                        <option value="Hold" data-url="{{ review_url }}" data-impacts="{{ status_impacts['Hold'] | tojson | forceescape }}">Hold</option>
+                        {% endif %}
+                        <option value="Completed" data-url="{{ review_url }}" data-impacts="{{ status_impacts['Completed'] | tojson | forceescape }}">Completed</option>
+                        {% endif %}
+                        <option value="Void" data-url="{{ review_url }}" data-impacts="{{ status_impacts['Void'] | tojson | forceescape }}">Void</option>
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-mac-primary btn-apple-pill px-4 text-nowrap"
+                        title="Save New Status">
+                        Save
+                    </button>
+                </div>
+            </div>
+            
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- 1. VIEW MODE (READ-ONLY) -->
+    <div id="viewModeContainer" class="{{ 'd-none' if is_edit_mode else '' }}">
+        <div class="row g-4 mb-4">
+            <!-- LEFT COLUMN: PRJ DESCRIPTION & INFORMATION -->
+            <div class="col-lg-7">
+                <div class="clean-card h-100">
+                    <h4 class="fw-bold mb-3 border-bottom pb-2" style="font-size: 16px; color: #1d1d1f;">
+                        <i class="fa-solid fa-circle-info text-primary me-2"></i> Document Information
+                    </h4>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-borderless table-info-aligned mb-0"
+                            style="font-size: 13.5px;">
+                            <tbody>
+                                <tr>
+                                    <td class="info-label">SO Number</td>
+                                    <td class="info-colon">:</td>
+                                    <td class="info-value fw-bold text-dark font-monospace">{{ doc.so_number }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="info-label">PRJ Title</td>
+                                    <td class="info-colon">:</td>
+                                    <td class="info-value fw-semibold text-dark">{{ doc.title }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="info-label">Master Project</td>
+                                    <td class="info-colon">:</td>
+                                    <td class="info-value">
+                                        {% if doc.master_project %}
+                                        <span class="badge"
+                                            style="background: #ecfdf5; color: #065f46; font-size: 12px; font-weight: 600;">
+                                            <i class="fa-regular fa-folder-open me-1"></i> {{ doc.master_project.name }}
+                                        </span>
+                                        {% else %}
+                                        <span class="text-muted">No Master Project</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="info-label">Internal Notes</td>
+                                    <td class="info-colon">:</td>
+                                    <td class="info-value text-secondary" style="white-space: pre-line;">{{
+                                        doc.notes or '-' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: OTHER PARAMETERS & INTERNAL NOTES -->
+            <div class="col-lg-5">
+                <div class="clean-card mb-4">
+                    <h5 class="fw-bold mb-3 border-bottom pb-2" style="font-size: 15px;">
+                        <i class="fa-solid fa-sliders text-primary me-2"></i> Operational Information
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-borderless table-info-aligned mb-0"
+                            style="font-size: 13.5px;">
+                            <tbody>
+
+                                <tr>
+                                    <td class="info-label">Urgency Level</td>
+                                    <td class="info-colon">:</td>
+                                    <td class="info-value">
+                                        <span
+                                            class="badge {{ 'bg-danger-lt text-danger' if doc.urgency_level == 2 else 'bg-success-lt text-success' }} fw-bold">
+                                            {{ 'Urgent' if doc.urgency_level == 2 else 'Normal' }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="info-label">Estimated Work Time</td>
+                                    <td class="info-colon">:</td>
+                                    <td class="info-value text-secondary">{{ doc.estimated_calendar_days }} days</td>
+                                </tr>
+                                <tr>
+                                    <td class="info-label">Assigned Technicians</td>
+                                    <td class="info-colon">:</td>
+                                    <td class="info-value">
+                                        <div class="fw-bold text-dark d-flex align-items-center flex-wrap gap-2">
+                                            <span><i class="fa-solid fa-user-gear text-success me-1"></i> {{
+                                                doc.assigned_technicians }}</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="info-label">Calendar Schedule</td>
+                                    <td class="info-colon">:</td>
+                                    <td class="info-value text-secondary">
+                                        {% if doc.scheduled_end_date %}
+                                            {{ (doc.scheduled_end_date | format_date(false)) }} <span style="font-size: 0.85em;">({{ doc.unique_scheduled_days }} days)</span>
+                                        {% else %}
+                                            Not scheduled yet
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="clean-card">
+                    <h5 class="fw-bold mb-3 border-bottom pb-2" style="font-size: 15px;">
+                        <i class="fa-solid fa-building text-primary me-2"></i> Client Data
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-borderless table-info-aligned mb-0"
+                            style="font-size: 13.5px;">
+                            <tbody>
+                                <tr>
+                                    <td class="info-label">Client / Site</td>
+                                    <td class="info-colon">:</td>
+                                    <td class="info-value fw-bold text-dark">{{ doc.client.company_name if doc.client
+                                        else '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="info-label">Address</td>
+                                    <td class="info-colon">:</td>
+                                    <td class="info-value text-secondary">{{ doc.site_address or (doc.client.address if
+                                        doc.client else '-') }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="info-label">PIC</td>
+                                    <td class="info-colon">:</td>
+                                    <td class="info-value fw-semibold text-dark">{{ doc.client.pic_name if doc.client
+                                        else '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="info-label">Phone / WA</td>
+                                    <td class="info-colon">:</td>
+                                    <td class="info-value fw-semibold text-dark">{{ doc.client.pic_phone if doc.client
+                                        else '-' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WORK DESCRIPTION TABLE -->
+        <div class="clean-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h4 class="fw-bold mb-1 d-flex align-items-center" style="font-size: 16px; color: #1d1d1f;">
+                        <i class="fa-solid fa-list-check text-success me-2"></i> Work Items & Description
+                    </h4>
+                </div>
+                <span class="badge bg-success-subtle text-success fw-bold px-3 py-2" style="border-radius: 20px;">
+                    {{ doc.items|length }} Item
+                </span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle border rounded-3 overflow-hidden mb-0"
+                    style="font-size: 13.5px;">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 50px;" class="text-center">No</th>
+                            <th>Work Description</th>
+                            <th style="width: 120px;" class="text-center">Quantity</th>
+                            <th style="width: 130px;">Unit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in doc.items|sort(attribute='display_order') %}
+                        <tr>
+                            <td class="text-center fw-bold text-secondary">{{ loop.index }}</td>
+                            <td class="fw-semibold text-dark">{{ item.description }}</td>
+                            <td class="text-center font-monospace fw-bold">{{ item.qty }}</td>
+                            <td><span class="badge bg-light text-secondary border">{{ item.uom }}</span></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">No work items yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TECHNICIAN WORK TABLE -->
+        {% if doc.technician_tasks %}
+        <div class="clean-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h4 class="fw-bold mb-1 d-flex align-items-center" style="font-size: 16px; color: #1d1d1f;">
+                        <i class="fa-solid fa-helmet-safety text-warning me-2"></i> Technician Work (Estimated Work
+                        Time)
+                    </h4>
+                </div>
+                <span class="badge bg-warning-subtle text-warning-emphasis fw-bold px-3 py-2"
+                    style="border-radius: 20px;">
+                    {{ doc.technician_tasks|length }} Tasks
+                </span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle border rounded-3 overflow-hidden mb-0"
+                    style="font-size: 13.5px;">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 50px;" class="text-center">No</th>
+                            <th>Task Description / Technician Activity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in doc.technician_tasks|sort(attribute='display_order') %}
+                        <tr>
+                            <td class="text-center fw-bold text-secondary">{{ loop.index }}</td>
+                            <td class="text-dark">{{ task.description }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- HO (HANDOVER DOCUMENT) SECTION -->
+        <div class="clean-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <h4 class="fw-bold mb-0 d-flex align-items-center" style="font-size: 16px; color: #1d1d1f;">
+                        <i class="fa-solid fa-file-contract text-primary me-2"></i> Handover Document (HO)
+                    </h4>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <a href="{{ url_for('documents.print_ho', ho_id=doc.ho.id) }}"
+                        class="btn-action text-secondary" title="Print HO" aria-label="Print HO"
+                        onclick="event.preventDefault(); printDocument(this.href);">
+                        <i class="fa-solid fa-print"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <table class="table table-sm table-borderless table-info-aligned mb-0" style="font-size: 13.5px;">
+                        <tbody>
+                            <tr>
+                                <td class="info-label">Document Number</td>
+                                <td class="info-colon">:</td>
+                                <td class="info-value fw-semibold font-monospace">{{ doc.ho.display_no }}</td>
+                            </tr>
+                            <tr>
+                                <td class="info-label">Completion Date</td>
+                                <td class="info-colon">:</td>
+                                <td class="info-value">
+                                    {% if doc.ho.completion_date %}
+                                    <span class="fw-semibold text-success font-monospace">{{ (doc.ho.completion_date | format_date(false)) }}</span>
+                                    {% else %}
+                                    <span class="text-muted small">Awaiting PRJ approval</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <table class="table table-sm table-borderless table-info-aligned mb-0" style="font-size: 13.5px;">
+                        <tbody>
+                            {% if doc.ho.approver %}
+                            <tr>
+                                <td class="info-label">Approved By</td>
+                                <td class="info-colon">:</td>
+                                <td class="info-value fw-semibold">{{ doc.ho.approver.name }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <td class="info-label">HO Notes</td>
+                                <td class="info-colon">:</td>
+                                <td class="info-value text-secondary">{{ doc.ho.notes or '-' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SIGNED HO PHOTO GALLERY -->
+            <div class="mt-3 pt-3 border-top">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="fw-bold mb-0 text-dark" style="font-size: 14px;">
+                        <i class="fa-solid fa-file-signature text-primary me-1"></i> HO Document Photos
+                    </h5>
+                </div>
+
+                {% if doc.ho.photos %}
+                <div class="d-flex flex-wrap gap-3 mt-2">
+                    {% for photo in doc.ho.photos %}
+                    <div class="position-relative">
+                        <div class="photo-thumb-card"
+                            onclick="openPhotoLightbox('{{ url_for('technician.protected_media', stored_path=photo.stored_path) }}', '{{ doc.ho.uploader.name if doc.ho.uploader else 'Technician/Admin' }}', '{{ (photo.uploaded_at | format_datetime) if photo.uploaded_at else '-' }}', '{{ (photo.taken_at | format_datetime) if photo.taken_at else '-' }}')">
+                            <img src="{{ url_for('technician.protected_media', stored_path=photo.stored_path) }}" alt="Signed HO photo">
+                        </div>
+                        {% if photo.taken_at %}<div style="width: 120px; font-size: 11px; color: #64748b; margin-top: 4px;">Taken {{ photo.taken_at | format_datetime }}</div>{% endif %}
+                        {% if can('documents') and not doc.ho.is_locked and not is_completed %}
+                        <form method="POST" action="{{ url_for('documents.delete_ho_photo', photo_id=photo.id) }}"
+                            class="position-absolute" style="top: 4px; right: 4px;"
+                            onsubmit="return confirm('Delete this signed HO photo?');">
+                            <button type="submit" class="btn btn-sm btn-danger p-0 rounded-circle d-flex align-items-center justify-content-center shadow"
+                                style="width: 24px; height: 24px; font-size: 11px;" title="Delete this photo">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-warning d-flex align-items-center gap-3 mt-2 mb-0 py-3 px-3" style="border-radius: 12px; background: #fffbeb; border-color: #fde68a;">
+                    <i class="fa-solid fa-triangle-exclamation text-warning fs-4"></i>
+                    <strong class="text-dark">The photo of the signed HO sheet has not been uploaded yet.</strong>
+                </div>
+                {% endif %}
+                {% if can('documents') and not doc.ho.is_locked and not is_completed %}
+                <button type="button" class="btn btn-sm btn-mac-primary btn-apple-pill mt-3" data-bs-toggle="modal" data-bs-target="#adminHoPhotoModal">
+                    <i class="fa-solid fa-upload me-1"></i> Upload Signed HO Photo
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- 2. INLINE EDIT MODE FORM (HIDDEN BY DEFAULT) -->
+    {% if can('documents') and not is_completed and request.args.get('storage') != '1' %}
+    <form method="POST" action="{{ url_for('documents.edit_prj', doc_id=doc.id) }}" id="editModeContainer"
+        class="{{ '' if is_edit_mode else 'd-none' }} mb-4">
+        <div class="row g-4 mb-4">
+            <!-- LEFT COLUMN: EDIT MAIN DATA -->
+            <div class="col-lg-7">
+                <div class="clean-card h-100"
+                    style="border: 1.5px solid #0071e3; box-shadow: 0 4px 20px rgba(0, 113, 227, 0.08);">
+                    <h4 class="fw-bold mb-3 border-bottom pb-2 text-primary" style="font-size: 16px;">
+                        <i class="fa-solid fa-circle-info me-2"></i> Edit Document Information
+                    </h4>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-dark">SO Number <span
+                                class="text-danger">*</span></label>
+                        <input type="text" name="so_number" class="form-control form-control-sm font-monospace"
+                            value="{{ doc.so_number }}" required style="border-radius: 8px; font-size: 13.5px;">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-dark">PRJ Title <span
+                                class="text-danger">*</span></label>
+                        <input type="text" name="title" class="form-control form-control-sm" value="{{ doc.title }}"
+                            required style="border-radius: 8px; font-size: 13.5px;">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-dark">Master Project (Optional)</label>
+                        <select name="master_project_id" id="editProjectSelect" class="form-select form-select-sm"
+                            style="border-radius: 8px;">
+                            <option value="">-- No Master Project --</option>
+                            {% for p in projects %}
+                            <option value="{{ p.id }}" data-client-id="{{ p.client_id }}" {% if
+                                doc.master_project_id==p.id %}selected{% endif %}>
+                                {{ p.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-0">
+                        <label class="form-label fw-bold small text-dark">Internal Notes</label>
+                        <textarea name="notes" class="form-control" rows="4"
+                            placeholder="Internal notes that are not printed for the client..."
+                            style="border-radius: 8px; font-size: 13.5px;">{{ doc.notes or '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: DOCUMENT PARAMETERS & CLIENT DATA -->
+            <div class="col-lg-5">
+                <div class="clean-card mb-4"
+                    style="border: 1.5px solid #0071e3; box-shadow: 0 4px 20px rgba(0, 113, 227, 0.08);">
+                    <h5 class="fw-bold mb-3 border-bottom pb-2 text-primary" style="font-size: 15px;">
+                        <i class="fa-solid fa-sliders me-2"></i> Edit Operational Information
+                    </h5>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-dark">Urgency Level</label>
+                        <select name="urgency_level" class="form-select form-select-sm" style="border-radius: 8px;">
+                            <option value="1" {% if doc.urgency_level==1 %}selected{% endif %}>Normal</option>
+                            <option value="2" {% if doc.urgency_level==2 %}selected{% endif %}>Urgent</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-0">
+                        <label class="form-label fw-bold small text-dark">Estimated Work Time (Days)</label>
+                        <div class="input-group" style="max-width: 140px;">
+                            <input type="number" name="estimated_calendar_days"
+                                class="form-control form-control-sm text-center font-monospace fw-bold"
+                                value="{{ doc.estimated_calendar_days or 5 }}" min="1"
+                                style="border-radius: 8px 0 0 8px;">
+                            <span class="input-group-text bg-light text-muted small px-2"
+                                style="border-radius: 0 8px 8px 0;">Days</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CLIENT DATA BOX (EDIT MODE) -->
+                <div class="clean-card"
+                    style="border: 1.5px solid #0071e3; box-shadow: 0 4px 20px rgba(0, 113, 227, 0.08);">
+                    <h5 class="fw-bold mb-3 border-bottom pb-2 text-primary" style="font-size: 15px;">
+                        <i class="fa-solid fa-building me-2"></i> Edit Client Data
+                    </h5>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-dark">Client / Company <span
+                                class="text-danger">*</span></label>
+                        <select name="client_id" id="editClientSelect" class="form-select form-select-sm" required
+                            onchange="filterProjectsByClient(this.value)" style="border-radius: 8px;">
+                            {% for c in clients %}
+                            <option value="{{ c.id }}" {% if doc.client_id==c.id %}selected{% endif %}>{{ c.company_name
+                                }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-0">
+                        <label class="form-label fw-bold small text-dark">Client Address for This Document Only</label>
+                        <textarea name="site_address" class="form-control" rows="3"
+                            placeholder="Project work address..."
+                            style="border-radius: 8px; font-size: 13.5px; color: #475569;">{{ doc.site_address or '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EDIT WORK ITEMS -->
+        <div class="clean-card mb-4"
+            style="border: 1.5px solid #0071e3; box-shadow: 0 4px 20px rgba(0, 113, 227, 0.08);">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold mb-0 text-primary" style="font-size: 16px;">
+                    <i class="fa-solid fa-list-check me-2"></i> Edit Work Items &amp; Description
+                </h4>
+                <button type="button" class="btn btn-sm btn-mac-secondary btn-apple-pill" onclick="addPrjItemRow()">
+                    <i class="fa-solid fa-plus me-1"></i> Add Work Item
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle" id="editPrjItemsTable" style="font-size: 13.5px;">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Work Description <span class="text-danger">*</span></th>
+                            <th style="width: 110px;" class="text-center">Quantity</th>
+                            <th style="width: 130px;" class="text-center">Unit</th>
+                            <th style="width: 50px;" class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="editPrjItemsBody">
+                        {% for item in doc.items|sort(attribute='display_order') %}
+                        <tr class="prj-item-row">
+                            <td>
+                                <input type="text" class="item-table-input prj-desc-input"
+                                    value="{{ item.description }}" required
+                                    placeholder="e.g. Supply & installation of equipment">
+                            </td>
+                            <td>
+                                <input type="number" class="item-table-input text-center prj-qty-input"
+                                    value="{{ item.qty }}" min="1" required>
+                            </td>
+                            <td>
+                                <input type="text" class="item-table-input text-center prj-uom-input"
+                                    value="{{ item.uom }}" placeholder="Unit/Pcs">
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn-row-delete" onclick="removeRow(this)"
+                                    title="Delete Row">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr class="prj-item-row">
+                            <td>
+                                <input type="text" class="item-table-input prj-desc-input" required
+                                    placeholder="e.g. Supply & installation of equipment">
+                            </td>
+                            <td>
+                                <input type="number" class="item-table-input text-center prj-qty-input" value="1"
+                                    min="1" required>
+                            </td>
+                            <td>
+                                <input type="text" class="item-table-input text-center prj-uom-input" value="Unit"
+                                    placeholder="Unit/Pcs">
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn-row-delete" onclick="removeRow(this)"
+                                    title="Delete Row">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- EDIT TECHNICIAN WORK -->
+        <div class="clean-card mb-4"
+            style="border: 1.5px solid #0071e3; box-shadow: 0 4px 20px rgba(0, 113, 227, 0.08);">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold mb-0 text-primary" style="font-size: 16px;">
+                    <i class="fa-solid fa-helmet-safety me-2"></i> Edit Technician Work (Field Steps)
+                </h4>
+                <button type="button" class="btn btn-sm btn-mac-secondary btn-apple-pill" onclick="addTechTaskRow()">
+                    <i class="fa-solid fa-plus me-1"></i> Add Task
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle" id="editTechTasksTable" style="font-size: 13.5px;">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Task Description / Technician Activity</th>
+                            <th style="width: 50px;" class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="editTechTasksBody">
+                        {% for task in doc.technician_tasks|sort(attribute='display_order') %}
+                        <tr class="prj-task-row">
+                            <td>
+                                <input type="text" class="item-table-input prj-task-desc-input"
+                                    value="{{ task.description }}"
+                                    placeholder="e.g. Pull the cables and install the conduit">
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn-row-delete" onclick="removeRow(this)"
+                                    title="Delete Row">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ACTION BUTTONS IN EDIT MODE -->
+        <div class="d-flex justify-content-end align-items-center p-3 bg-white clean-card border gap-2">
+            <button type="button" onclick="toggleEditMode()" class="btn btn-mac-secondary btn-apple-pill px-4">
+                Cancel
+            </button>
+            <input type="hidden" name="prj_items_json" id="prj_items_json" value="[]">
+            <input type="hidden" name="prj_tasks_json" id="prj_tasks_json" value="[]">
+            <button type="submit" class="btn btn-mac-primary btn-apple-pill px-4 fw-bold">
+                Save Changes
+            </button>
+        </div>
+    </form>
+    {% endif %}
+
+    <!-- TECHNICIAN WORK REPORTS & PHOTO EVIDENCE -->
+    <div class="clean-card mb-4">
+        <div class="d-flex justify-content-between align-items-center gap-2 mb-3 flex-wrap">
+            <h4 class="fw-bold mb-0 d-flex align-items-center" style="font-size: 16px;">
+                <i class="fa-solid fa-camera text-primary me-2"></i> Work Reports & Field Photo Evidence
+            </h4>
+            {% if can('documents') and not is_completed and request.args.get('storage') != '1' %}
+            {# Same as the Approve icon on the list: works in any condition, the popup lists what is
+               still missing (daily/final report, signed HO photo). #}
+            {% set can_acc = doc.status != 'Hold' %}
+
+            <div>
+                <button type="button"
+                    class="btn btn-sm {{ 'btn-mac-success' if can_acc else 'btn-secondary' }} btn-apple-pill px-3"
+                    {% if can_acc %}
+                    onclick="openStatusConfirm(this)"
+                    data-url="{{ url_for('documents.review_doc', doc_type='prj', doc_id=doc.id) }}"
+                    data-impacts="{{ status_impacts['Completed'] | tojson | forceescape }}"
+                    {% else %}
+                    disabled
+                    {% endif %}
+                    title="{{ 'Complete PRJ' if can_acc else 'A held PRJ must be set back to Online before it can be approved' }}">
+                    <i class="fa-solid fa-check-double me-1"></i> Approve Document
+                </button>
+            </div>
+            {% endif %}
+        </div>
+
+        {% for r in reports %}
+        <div
+            class="p-3 mb-3 rounded-3 border {{ 'border-success bg-success-lt' if r.status == 'Approved' else 'bg-light' }}">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="avatar avatar-sm rounded-circle bg-white text-dark fw-bold border">
+                        {{ r.uploader.name[0] | upper if r.uploader else 'T' }}
+                    </div>
+                    <div>
+                        <strong class="text-dark">{{ r.uploader.name if r.uploader else 'Technician' }}</strong>
+                        <span class="text-muted small">uploaded on {{ (r.uploaded_at | format_datetime) if
+                            r.uploaded_at else '-' }}</span>
+                    </div>
+                </div>
+                <div>
+                    {% if r.report_type == 'daily' or r.status == 'Daily' %}
+                    <span class="badge bg-primary-lt text-primary">Daily Progress</span>
+                    {% elif r.status == 'Approved' %}
+                    <span class="badge bg-success text-white">Approved</span>
+                    {% else %}
+                    <span class="badge bg-warning text-white">Pending Review</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if r.report_title %}
+            <h4 class="mb-1 mt-2 text-dark fw-bold">{{ r.report_title }}</h4>
+            {% endif %}
+
+            {% if r.report_text %}
+            <p class="mb-3 mt-2 text-dark" style="white-space: pre-line;">{{ r.report_text }}</p>
+            {% endif %}
+
+            <!-- PHOTOS GALLERY (INTERACTIVE LIGHTBOX) -->
+            {% if r.photo_list %}
+            <div class="d-flex flex-wrap gap-2 mt-2">
+                {% for photo in r.photos %}
+                <div>
+                    <div class="photo-thumb-card"
+                        onclick="openPhotoLightbox('{{ url_for('technician.protected_media', stored_path=photo.stored_path) }}', '{{ r.uploader.name if r.uploader else 'Technician' }}', '{{ (r.uploaded_at | format_datetime) if r.uploaded_at else '-' }}', '{{ (photo.taken_at | format_datetime) if photo.taken_at else '-' }}')">
+                        <img src="{{ url_for('technician.protected_media', stored_path=photo.stored_path) }}" alt="Work evidence">
+                    </div>
+                    {% if photo.taken_at %}<div style="width: 120px; font-size: 11px; color: #64748b; margin-top: 4px;">Taken {{ photo.taken_at | format_datetime }}</div>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-4">
+            <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-secondary d-block"></i>
+            No reports or work photos have been uploaded by technicians yet.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function toggleEditMode() {
+        const viewContainer = document.getElementById('viewModeContainer');
+        const editContainer = document.getElementById('editModeContainer');
+        const toggleBtn = document.getElementById('btnToggleEdit');
+        const isEditing = !editContainer.classList.contains('d-none');
+
+        if (isEditing) {
+            editContainer.classList.add('d-none');
+            viewContainer.classList.remove('d-none');
+            if (toggleBtn) {
+                toggleBtn.innerHTML = '<i class="fa-solid fa-pen-to-square me-1"></i> Edit';
+                toggleBtn.classList.remove('btn-mac-danger');
+                toggleBtn.classList.add('btn-mac-secondary');
+            }
+        } else {
+            viewContainer.classList.add('d-none');
+            editContainer.classList.remove('d-none');
+            if (toggleBtn) {
+                toggleBtn.innerHTML = '<i class="fa-solid fa-xmark me-1"></i> Cancel Edit';
+                toggleBtn.classList.remove('btn-mac-secondary');
+                toggleBtn.classList.add('btn-mac-danger');
+            }
+            // Filter the projects when edit mode first opens
+            const clientSelect = document.getElementById('editClientSelect');
+            if (clientSelect) {
+                filterProjectsByClient(clientSelect.value);
+            }
+        }
+    }
+
+    function filterProjectsByClient(clientId) {
+        const select = document.getElementById('editProjectSelect');
+        if (!select) return;
+        const currentVal = select.value;
+        let selectedStillValid = false;
+
+        Array.from(select.options).forEach((opt, idx) => {
+            if (idx === 0) return; // Keep "No Master Project"
+            const optClientId = opt.getAttribute('data-client-id');
+            if (!clientId || optClientId === String(clientId)) {
+                opt.style.display = '';
+                if (opt.value === currentVal) selectedStillValid = true;
+            } else {
+                opt.style.display = 'none';
+            }
+        });
+
+        if (!selectedStillValid && currentVal !== '') {
+            select.value = '';
+        }
+    }
+
+    function addPrjItemRow() {
+        const tbody = document.getElementById('editPrjItemsBody');
+        const tr = document.createElement('tr');
+        tr.className = 'prj-item-row';
+        tr.innerHTML = `
+            <td>
+                <input type="text" class="item-table-input prj-desc-input" required placeholder="e.g. Supply & installation of equipment">
+            </td>
+            <td>
+                <input type="number" class="item-table-input text-center prj-qty-input" value="1" min="1" required>
+            </td>
+            <td>
+                <input type="text" class="item-table-input text-center prj-uom-input" value="Unit" placeholder="Unit/Pcs">
+            </td>
+            <td class="text-center">
+                <button type="button" class="btn-row-delete" onclick="removeRow(this)" title="Delete Row">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    }
+
+    function addTechTaskRow() {
+        const tbody = document.getElementById('editTechTasksBody');
+        const tr = document.createElement('tr');
+        tr.className = 'prj-task-row';
+        tr.innerHTML = `
+            <td>
+                <input type="text" class="item-table-input prj-task-desc-input" placeholder="e.g. Pull the cables and install the equipment">
+            </td>
+            <td class="text-center">
+                <button type="button" class="btn-row-delete" onclick="removeRow(this)" title="Delete Row">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    }
+
+    function removeRow(btn) {
+        const row = btn.closest('tr');
+        const tbody = row.parentElement;
+        if (tbody.id === 'editPrjItemsBody' && tbody.children.length <= 1) {
+            alert('At least one work item row is required.');
+            return;
+        }
+        row.remove();
+    }
+
+    // Auto-init client project filter
+    document.addEventListener('DOMContentLoaded', () => {
+        const clientSelect = document.getElementById('editClientSelect');
+        if (clientSelect) {
+            filterProjectsByClient(clientSelect.value);
+        }
+
+        // Setup JSON serialization before form submission
+        const form = document.querySelector('form[action*="/documents/prj/"]');
+        if (form && document.getElementById('prj_items_json')) {
+            form.addEventListener('submit', function (e) {
+                // Serialize PRJ Items
+                const items = [];
+                document.querySelectorAll('#editPrjItemsBody .prj-item-row').forEach(row => {
+                    const desc = row.querySelector('.prj-desc-input').value.trim();
+                    if (desc) {
+                        items.push({
+                            description: desc,
+                            qty: parseInt(row.querySelector('.prj-qty-input').value) || 1,
+                            uom: row.querySelector('.prj-uom-input').value.trim() || 'Unit'
+                        });
+                    }
+                });
+                
+                if (items.length === 0) {
+                    e.preventDefault();
+                    alert('At least one work item row is required.');
+                    return;
+                }
+                document.getElementById('prj_items_json').value = JSON.stringify(items);
+
+                // Serialize Tech Tasks
+                const tasks = [];
+                document.querySelectorAll('#editTechTasksBody .prj-task-row').forEach(row => {
+                    const descInput = row.querySelector('.prj-task-desc-input');
+                    if (descInput) {
+                        const desc = descInput.value.trim();
+                        if (desc) {
+                            tasks.push({ description: desc });
+                        }
+                    }
+                });
+                document.getElementById('prj_tasks_json').value = JSON.stringify(tasks);
+            });
+        }
+    });
+
+    function openPhotoLightbox(photoUrl, uploaderName, timestamp, takenAt) {
+        document.getElementById('lightboxImg').src = photoUrl;
+        document.getElementById('lightboxUploader').innerText = 'Photo by: ' + uploaderName;
+        document.getElementById('lightboxTimestamp').innerText = 'Uploaded on: ' + timestamp
+            + (takenAt && takenAt !== '-' ? ' · Taken: ' + takenAt : '');
+        document.getElementById('lightboxDownloadBtn').href = photoUrl;
+
+        const modalEl = document.getElementById('photoLightboxModal');
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+
+</script>
+
+<!-- PHOTO LIGHTBOX MODAL -->
+<div class="modal fade" id="photoLightboxModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header border-0 bg-dark text-white py-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-image text-primary"></i>
+                    <div>
+                        <div class="fw-bold" id="lightboxUploader">Photo Evidence</div>
+                        <small class="text-muted" id="lightboxTimestamp">-</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0 bg-black text-center"
+                style="min-height: 350px; display: flex; align-items: center; justify-content: center;">
+                <img id="lightboxImg" src="" alt="Full Preview"
+                    style="max-width: 100%; max-height: 75vh; object-fit: contain;">
+            </div>
+            <div class="modal-footer border-0 bg-dark text-white py-2 justify-content-between">
+                <a id="lightboxDownloadBtn" href="" target="_blank" download
+                    class="btn btn-sm btn-mac-secondary btn-apple-pill text-white">
+                    <i class="fa-solid fa-download me-1"></i> Open / Download Full Resolution
+                </a>
+                <button type="button" class="btn btn-sm btn-mac-secondary btn-apple-pill"
+                    data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if not is_completed %}
+{% include 'partials/status_confirm_modal.html' %}
+{% endif %}
+
+<!-- ADMIN UPLOAD HO PHOTO MODAL -->
+{% if not doc.ho.is_locked and not is_completed %}
+<div class="modal fade" id="adminHoPhotoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <form method="POST" action="{{ url_for('documents.upload_ho_photo', ho_id=doc.ho.id) }}" enctype="multipart/form-data">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fa-solid fa-file-arrow-up text-primary me-2"></i> Upload Signed HO Photo
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-3">
+                    <p class="small text-muted mb-3">
+                        Upload a photo of the HO sheet (<span class="font-monospace fw-bold">{{ doc.ho.display_no }}</span>) signed by the client on site.
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-dark">Choose Signed HO Photos (JPG, PNG) <span class="text-danger">*</span></label>
+                        <input type="file" name="ho_photos" class="form-control" accept="image/*" multiple required style="border-radius: 8px;">
+                        <small class="text-muted d-block mt-1">You can choose more than one photo if the HO has several pages.</small>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-sm btn-mac-secondary btn-apple-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-sm btn-mac-primary btn-apple-pill fw-bold">
+                        <i class="fa-solid fa-upload me-1"></i> Upload Photos Now
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

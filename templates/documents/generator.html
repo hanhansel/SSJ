@@ -1,0 +1,1236 @@
+{% extends "base.html" %}
+
+{% block page_title %}Create New Document{% endblock %}
+
+{% block content %}
+<style>
+    .generator-card {
+        background: #ffffff;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        padding: 24px;
+        transition: all 0.2s ease;
+    }
+
+    .generator-empty-state {
+        background: #ffffff;
+        border-radius: 16px;
+        border: 1px dashed #cbd5e1;
+        min-height: 480px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 24px;
+        text-align: center;
+    }
+
+    .btn-apple-pill {
+        border-radius: 20px !important;
+        padding: 8px 22px !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .btn-apple-pill:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 113, 227, 0.25);
+    }
+
+    .client-option-item {
+        transition: background 0.15s ease;
+        cursor: pointer;
+    }
+
+    .client-option-item:hover {
+        background-color: #f1f5f9;
+    }
+
+    .client-option-item.selected {
+        background-color: rgba(0, 113, 227, 0.08);
+    }
+
+    /* ==========================================================
+       PRJ WORK ITEMS & TECHNICIAN TASKS ENHANCEMENTS
+       ========================================================== */
+    .prj-work-card {
+        background: #ffffff;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        padding: 24px;
+        transition: all 0.2s ease;
+    }
+
+    .prj-section-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+    }
+
+    .prj-section-toolbar h5 {
+        color: #1d1d1f;
+        font-size: 15px;
+        font-weight: 700;
+        margin: 0 0 3px;
+    }
+
+    .prj-section-toolbar p {
+        color: #86868b;
+        font-size: 12.5px;
+        margin: 0;
+    }
+
+    .prj-table-head {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 9px 14px;
+        color: #64748b;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        margin-bottom: 8px;
+    }
+
+    .prj-item-row {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        transition: all 0.18s ease;
+    }
+
+    .prj-item-row:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+    }
+
+    .prj-row-badge {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        background: #f1f5f9;
+        color: #475569;
+        font-weight: 700;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #e2e8f0;
+        flex-shrink: 0;
+        transition: all 0.15s ease;
+    }
+
+    .prj-item-row:focus-within .prj-row-badge {
+        background: #eff6ff;
+        color: #0071e3;
+        border-color: #bfdbfe;
+    }
+
+    .btn-row-action {
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        background: #ffffff;
+        color: #64748b;
+        transition: all 0.15s ease;
+        cursor: pointer;
+    }
+
+    .btn-row-action:hover:not(:disabled) {
+        background: #f8fafc;
+        color: #1e293b;
+        border-color: #cbd5e1;
+    }
+
+    .btn-row-action:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+    }
+
+    .btn-row-delete:hover:not(:disabled) {
+        background: #fef2f2 !important;
+        color: #ef4444 !important;
+        border-color: #fca5a5 !important;
+    }
+
+    .prj-empty-state {
+        background: #f8fafc;
+        border: 1.5px dashed #cbd5e1;
+        border-radius: 12px;
+        padding: 24px 16px;
+        text-align: center;
+        margin-bottom: 12px;
+    }
+
+    .prj-subsection {
+        border-top: 1px dashed #e2e8f0;
+        margin-top: 24px;
+        padding-top: 20px;
+    }
+</style>
+
+<div class="page-container-clean container-fluid" style="max-width: 1200px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="page-title-clean">Create New Document</h1>
+        </div>
+    </div>
+
+    <!-- DOUBLE COLUMN LAYOUT -->
+    <div class="row g-4">
+        <!-- LEFT COLUMN: DOCUMENT TYPE SELECTION -->
+        <div class="col-lg-4 col-md-5">
+            <div class="generator-card sticky-top" style="top: 24px;">
+                <h4 class="fw-bold mb-3 d-flex align-items-center" style="font-size: 17px; color: #1d1d1f;">
+                    <i class="fa-solid fa-layer-group text-primary me-2"></i> Choose Document Type
+                </h4>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-dark" style="font-size: 13px;">Document Type <span
+                            class="text-danger">*</span></label>
+                    <select id="docTypeSelect" class="form-select form-select-lg"
+                        onchange="handleDocTypeSelect(this.value)"
+                        style="border-radius: 12px; font-size: 14px; font-weight: 600; border: 1.5px solid #0071e3;">
+                        <option value="">-- Choose Document Type --</option>
+                        <option value="svc">SVC</option>
+                        <option value="xprj">XPRJ</option>
+                        <option value="prj">PRJ</option>
+                    </select>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: FORM OR EMPTY STATE -->
+        <div class="col-lg-8 col-md-7">
+            <!-- EMPTY STATE (WHITE PAGE BEFORE SELECTION) -->
+            <div id="emptyStatePanel" class="generator-empty-state">
+                <div
+                    style="width: 64px; height: 64px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                    <i class="fa-solid fa-file-circle-plus text-secondary" style="font-size: 28px; opacity: 0.5;"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-2">No Form Selected</h5>
+                <p class="text-muted" style="max-width: 380px; font-size: 13.5px;">
+                    Choose a <strong>Document Type</strong> in the dropdown on the left panel to load
+                    the document form.
+                </p>
+            </div>
+
+            <!-- ACTIVE FORM CONTAINER (DISPLAYED UPON SELECTION) -->
+            <div id="formContainerPanel" class="d-none">
+                <form method="POST" action="{{ url_for('documents.generator') }}" id="generatorForm">
+                    <input type="hidden" name="doc_type" id="doc_type" value="svc">
+
+                    <div class="generator-card mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="fw-bold mb-0 d-flex align-items-center" style="font-size: 17px; color: #1d1d1f;">
+                                <i class="fa-solid fa-circle-info text-primary me-2"></i> Main Document Information
+                            </h4>
+                            <span class="badge px-3 py-2" id="docTypeBadge"
+                                style="border-radius: 20px; font-size: 12px; background: #e0f2fe; color: #0284c7; font-weight: 700;">
+                                SVC DOCUMENT
+                            </span>
+                        </div>
+
+                        <input type="hidden" name="doc_date" id="doc_date" value="{{ today.strftime('%Y-%m-%d') }}">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Document Sequence Number <span
+                                    class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted font-monospace"
+                                    style="border-radius: 10px 0 0 10px; border-color: #cbd5e1;"><i
+                                        class="fa-solid fa-hashtag"></i></span>
+                                <input type="number" min="1" name="doc_no" id="doc_no_input"
+                                    class="form-control font-monospace fw-bold" placeholder="e.g. 44" value=""
+                                    required
+                                    style="border-radius: 0 10px 10px 0; border-color: #cbd5e1; letter-spacing: 0.5px;">
+                            </div>
+                        </div>
+
+                        <!-- SEARCHABLE CLIENT PICKER -->
+                        <div class="mb-3 position-relative" id="clientPickerWrapper">
+                            <label class="form-label fw-bold">Choose Client / Site <span
+                                    class="text-danger">*</span></label>
+
+                            <!-- Hidden input holding actual client_id for form submission -->
+                            <input type="hidden" name="client_id" id="selectedClientId" required>
+
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"
+                                    style="border-radius: 10px 0 0 10px; border-color: #cbd5e1;">
+                                    <i class="fa-solid fa-building"></i>
+                                </span>
+                                <input type="text" id="clientSearchInput" class="form-control"
+                                    placeholder="Type a client name or PIC name..." autocomplete="off"
+                                    onfocus="openClientDropdown()" oninput="filterClientDropdown()"
+                                    style="border-color: #cbd5e1; font-size: 13.5px;">
+                                <button type="button" id="clearClientBtn" class="btn btn-outline-secondary d-none"
+                                    onclick="clearSelectedClient()" title="Clear Selection">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                                {% if can_do('add_client_from_document') %}
+                                <button type="button" class="btn btn-mac-secondary" data-bs-toggle="modal"
+                                    data-bs-target="#modalQuickAddClient" title="Add New Client"
+                                    style="border-radius: 0 10px 10px 0;">
+                                    <i class="fa-solid fa-plus text-primary me-1"></i> Add
+                                </button>
+                                {% else %}
+                                <style>
+                                    /* No Add button: round the field itself while the clear button is hidden. */
+                                    #clientSearchInput:has(+ #clearClientBtn.d-none) { border-radius: 0 10px 10px 0; }
+                                    #clearClientBtn { border-radius: 0 10px 10px 0; }
+                                </style>
+                                {% endif %}
+                            </div>
+
+                            <!-- SEARCH RESULTS DROPDOWN LIST -->
+                            <div id="clientDropdownMenu"
+                                class="shadow-lg border bg-white position-absolute w-100 mt-1 d-none"
+                                style="border-radius: 12px; max-height: 280px; overflow-y: auto; z-index: 1050; top: 100%; left: 0;">
+                                <div
+                                    class="p-2 px-3 border-bottom bg-light small text-muted d-flex justify-content-between align-items-center">
+                                    <span><i class="fa-solid fa-magnifying-glass me-1 text-primary"></i> Client
+                                        List:</span>
+                                    <span id="clientMatchCount" class="badge bg-primary-lt">{{ clients|length }}
+                                        clients</span>
+                                </div>
+                                <div id="clientListContainer">
+                                    {% for c in clients %}
+                                    <div class="client-option-item p-2 px-3 border-bottom" data-id="{{ c.id }}"
+                                        data-name="{{ c.company_name }}" data-pic="{{ c.pic_name or '' }}"
+                                        data-phone="{{ c.pic_phone or '' }}" data-type="{{ c.client_type or '' }}"
+                                        data-address="{{ c.address or '' }}"
+                                        onclick="selectClientItem('{{ c.id }}', '{{ c.company_name|escape }}', '{{ c.pic_name|escape if c.pic_name else '' }}', '{{ c.pic_phone|escape if c.pic_phone else '' }}', '{{ c.client_type|escape if c.client_type else '' }}')">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <strong class="text-dark client-name-text">{{ c.company_name }}</strong>
+                                                {% if c.pic_name %}
+                                                <div class="small text-muted client-pic-text mt-1">
+                                                    <i class="fa-solid fa-user text-secondary me-1"></i> PIC: <strong>{{
+                                                        c.pic_name }}</strong> {% if c.pic_phone %}({{ c.pic_phone }}){%
+                                                    endif %}
+                                                </div>
+                                                {% endif %}
+                                                {% if c.address %}
+                                                <div class="small text-secondary text-truncate client-addr-text mt-1"
+                                                    style="max-width: 480px; font-size: 11.5px;">
+                                                    <i class="fa-solid fa-location-dot text-danger me-1"></i> {{
+                                                    c.address }}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            {% if c.client_type %}
+                                            <span class="badge bg-light text-secondary border small ms-2">{{
+                                                c.client_type }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div id="noClientMatch" class="p-4 text-center text-muted small d-none">
+                                    <i class="fa-solid fa-building-circle-xmark fa-2x mb-2 text-secondary d-block"></i>
+                                    No client matches the search.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- DOCUMENT SPECIFIC SITE ADDRESS -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Client / Site Address <span
+                                    class="text-danger">*</span></label>
+                            <textarea name="site_address" id="docSiteAddress" class="form-control" rows="2"
+                                placeholder="Filled in automatically when a client is chosen; you can change it for this document only."
+                                style="border-radius: 10px;"></textarea>
+                        </div>
+
+                        <!-- SVC SPECIFIC FIELDS -->
+                        <div id="svcFields">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-5">
+                                    <label class="form-label fw-bold">Reference Number</label>
+                                    <input type="text" name="reference" class="form-control"
+                                        placeholder="e.g. XX/SO/26" style="border-radius: 10px;">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label fw-bold">Estimated Days</label>
+                                    <div class="input-group" style="max-width: 95px;">
+                                        <input type="number" name="estimated_calendar_days"
+                                            class="form-control text-center font-monospace fw-bold px-1" value="2"
+                                            min="1" style="border-radius: 10px 0 0 10px; font-size: 13px;">
+                                        <span class="input-group-text bg-light text-muted px-2"
+                                            style="border-radius: 0 10px 10px 0; font-size: 11.5px;">Days</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- XPRJ SPECIFIC FIELDS -->
+                        <div id="xprjFields" class="d-none">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-5">
+                                    <label class="form-label fw-bold">Reference Number</label>
+                                    <input type="text" name="xprj_reference" class="form-control"
+                                        placeholder="e.g. XX/SO/26" style="border-radius: 10px;">
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label fw-bold">Choose Parent PRJ <span class="text-danger">*</span></label>
+                                    <select name="prj_id" id="prjIdSelect" class="form-select xprj-required" required style="border-radius: 10px;" onchange="syncPrjToClient(this)">
+                                        <option value="">-- Choose Parent PRJ --</option>
+                                        {% for prj in parent_prjs %}
+                                        <option value="{{ prj.id }}" data-client-id="{{ prj.client_id }}">{{ prj.display_no }} ({{ prj.client.company_name if prj.client else '-' }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label fw-bold">Estimated Days</label>
+                                    <div class="input-group" style="max-width: 95px;">
+                                        <input type="number" name="estimated_calendar_days_xprj"
+                                            class="form-control text-center font-monospace fw-bold px-1" value="2"
+                                            min="1" style="border-radius: 10px 0 0 10px; font-size: 13px;">
+                                        <span class="input-group-text bg-light text-muted px-2"
+                                            style="border-radius: 0 10px 10px 0; font-size: 11.5px;">Days</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PRJ SPECIFIC FIELDS -->
+                        <div id="prjFields" class="d-none">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-5">
+                                    <label class="form-label fw-bold">SO Number <span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" name="prj_so_number" class="form-control prj-required"
+                                        placeholder="SO Number" style="border-radius: 10px;">
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label fw-bold">Urgency</label>
+                                    <select name="prj_urgency_level" class="form-select" style="border-radius: 10px;">
+                                        <option value="1">Normal</option>
+                                        <option value="2">Urgent</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label fw-bold">Estimated Days</label>
+                                    <div class="input-group" style="max-width: 95px;">
+                                        <input type="number" name="prj_estimated_calendar_days"
+                                            class="form-control text-center font-monospace fw-bold px-1" value="5"
+                                            min="1" style="border-radius: 10px 0 0 10px; font-size: 13px;">
+                                        <span class="input-group-text bg-light text-muted px-2"
+                                            style="border-radius: 0 10px 10px 0; font-size: 11.5px;">Days</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Description / Title <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" name="prj_title" class="form-control prj-required"
+                                    placeholder="PRJ job title" style="border-radius: 10px;">
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold">Master Project <span
+                                            class="text-muted fw-normal">(optional)</span></label>
+                                    <select name="master_project_id" id="prjMasterProject" class="form-select" disabled
+                                        style="border-radius: 10px;">
+                                        <option value="">No Master Project</option>
+                                        {% for project in projects %}<option value="{{ project.id }}"
+                                            data-client-id="{{ project.client_id }}">{{ project.name }}</option>{%
+                                        endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WORK DESCRIPTION (FREE-TEXT) -->
+                    <div class="generator-card mb-4" id="standardWorkFields">
+                        <h4 class="fw-bold mb-3 d-flex align-items-center" style="font-size: 17px; color: #1d1d1f;">
+                            <i class="fa-solid fa-list-check text-primary me-2"></i> Work Details & Description
+                        </h4>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Customer Complaint / Request <span
+                                    class="text-danger">*</span></label>
+                            <textarea name="customer_complaint" class="form-control" rows="3"
+                                placeholder="Customer Complaint / Request" required
+                                style="border-radius: 10px;"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Task Description <span class="text-danger">*</span></label>
+                            <textarea name="task_description" id="task_description_input" class="form-control" rows="4"
+                                placeholder="Task Description" required style="border-radius: 10px;">Confirm and coordinate the visit schedule.
+Check the cause of the damage.
+Fix the cause of the problem.</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Notes</label>
+                            <input type="text" name="notes" class="form-control" placeholder="Notes"
+                                style="border-radius: 10px;">
+                        </div>
+                    </div>
+
+                    <div class="d-none" id="prjWorkFields">
+                        <div class="generator-card mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="fw-bold mb-0 d-flex align-items-center"
+                                    style="font-size: 17px; color: #1d1d1f;">
+                                    <i class="fa-solid fa-list-check text-primary me-2"></i> Work Details &
+                                    Description
+                                </h4>
+                            </div>
+
+                            <!-- 1. WORK ITEMS -->
+                            <div class="prj-section-toolbar">
+                                <div>
+                                    <h5 class="fw-bold mb-1"><i class="fa-solid fa-cubes text-secondary me-1"></i>
+                                        Work Items</h5>
+                                </div>
+                                <button type="button" class="btn btn-mac-secondary btn-apple-pill btn-sm flex-shrink-0"
+                                    onclick="addPrjItem()">
+                                    <i class="fa-solid fa-plus me-1"></i> Add Row
+                                </button>
+                            </div>
+
+                            <!-- Header Column Labels aligned with row items -->
+                            <div class="prj-table-head d-none d-md-block">
+                                <div class="row g-2 align-items-center">
+                                    <div class="col-auto" style="width: 38px; text-align: center;">No</div>
+                                    <div class="col">Work Description <span class="text-danger">*</span></div>
+                                    <div class="col-auto" style="width: 90px; text-align: center;">Qty <span
+                                            class="text-danger">*</span></div>
+                                    <div class="col-auto" style="width: 120px;">Unit <span
+                                            class="text-danger">*</span></div>
+                                    <div class="col-auto" style="width: 50px; text-align: center;">Actions</div>
+                                </div>
+                            </div>
+
+                            <!-- Container of Items -->
+                            <div id="prjItems"></div>
+
+                            <!-- Empty State for Items (hidden when items exist) -->
+                            <div id="prjItemsEmptyState" class="prj-empty-state d-none">
+                                <i class="fa-solid fa-clipboard-list text-muted mb-2"
+                                    style="font-size: 26px; opacity: 0.5;"></i>
+                                <div class="fw-bold text-dark mb-1" style="font-size: 14px;">No Work Items Yet
+                                </div>
+                                <p class="text-muted small mb-3">At least one work item is required to
+                                    issue a PRJ.</p>
+                                <button type="button" class="btn btn-sm btn-mac-primary btn-apple-pill"
+                                    onclick="addPrjItem()">
+                                    <i class="fa-solid fa-plus me-1"></i> Add the First Work Item
+                                </button>
+                            </div>
+
+                            <!-- 2. TECHNICIAN WORK (ESTIMATED WORK TIME) -->
+                            <div class="prj-subsection">
+                                <div class="prj-section-toolbar">
+                                    <div>
+                                        <h5 class="fw-bold mb-1"><i
+                                                class="fa-solid fa-helmet-safety text-warning me-1"></i> Technician
+                                            Work</h5>
+                                    </div>
+                                    <button type="button"
+                                        class="btn btn-mac-secondary btn-apple-pill btn-sm flex-shrink-0"
+                                        onclick="addPrjTechnicianTask()">
+                                        <i class="fa-solid fa-plus me-1"></i> Add Row
+                                    </button>
+                                </div>
+
+                                <div class="prj-table-head d-none d-md-block">
+                                    <div class="row g-2 align-items-center">
+                                        <div class="col-auto" style="width: 38px; text-align: center;">No</div>
+                                        <div class="col">Task Description / Technician Activity</div>
+                                        <div class="col-auto" style="width: 50px; text-align: center;">Actions</div>
+                                    </div>
+                                </div>
+
+                                <div id="prjTechnicianTasks"></div>
+
+                                <div id="prjTechTasksEmptyState" class="prj-empty-state d-none">
+                                    <i class="fa-solid fa-user-gear text-muted mb-2"
+                                        style="font-size: 24px; opacity: 0.5;"></i>
+                                    <div class="fw-bold text-dark mb-1" style="font-size: 13.5px;">No Special Technician
+                                        Tasks Yet</div>
+                                    <p class="text-muted small mb-3">Add technical instructions if the field work
+                                        has special needs.</p>
+                                    <button type="button" class="btn btn-sm btn-mac-secondary btn-apple-pill"
+                                        onclick="addPrjTechnicianTask()">
+                                        <i class="fa-solid fa-plus me-1"></i> Add Row
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- DATALIST FOR UOM (UNIT) -->
+                        <datalist id="prjUomSuggestions">
+                            <option value="Unit">
+                            <option value="Point">
+                            <option value="Meter">
+                            <option value="Pcs">
+                            <option value="Set">
+                            <option value="Lot">
+                            <option value="Package">
+                            <option value="Roll">
+                            <option value="Port">
+                            <option value="Bar">
+                            <option value="Box">
+                        </datalist>
+
+                        <div class="generator-card mb-4">
+                            <h4 class="fw-bold mb-3 d-flex align-items-center" style="font-size: 17px; color: #1d1d1f;">
+                                <i class="fa-regular fa-note-sticky text-primary me-2"></i> Notes
+                            </h4>
+                            <input type="text" name="prj_notes" class="form-control"
+                                placeholder="Additional notes for the PRJ" style="border-radius:10px;">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-3 mb-5">
+                        <input type="hidden" name="prj_items_json" id="prj_items_json" value="[]">
+                        <input type="hidden" name="prj_tasks_json" id="prj_tasks_json" value="[]">
+                        <a href="{{ url_for('documents.list_docs') }}"
+                            class="btn btn-mac-secondary btn-apple-pill px-4">Cancel</a>
+                        <button type="submit" class="btn btn-mac-primary btn-apple-pill px-5 py-2" id="submitBtn">
+                            Issue SVC Document
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- QUICK ADD CLIENT MODAL: clients belong to Data Storage (CROSS_MENU_ACTIONS) -->
+{% if can_do('add_client_from_document') %}
+<div class="modal fade" id="modalQuickAddClient" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px;">
+            <div class="modal-header border-0 pb-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-bolt text-warning me-2"></i>
+                    <span id="quickClientTitle">Add Client</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body px-4 py-3">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Company Name <span class="text-danger">*</span></label>
+                    <input type="text" id="quickCompanyName" class="form-control" placeholder="Example Customer Ltd"
+                        required style="border-radius: 10px;">
+                </div>
+                {# Two versions by document type: a client added for an SVC needs a type;
+                   one added for a PRJ or XPRJ has none. #}
+                <div class="mb-3" id="quickClientTypeWrapper">
+                    <label class="form-label fw-bold">Client Type <span class="text-danger">*</span></label>
+                    <select id="quickClientType" class="form-select" style="border-radius: 10px;">
+                        <option value="">-- Choose Client Type --</option>
+                        {% for t in client_types %}
+                        <option value="{{ t }}">{{ t }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Address</label>
+                    <textarea id="quickAddress" class="form-control" rows="2" placeholder="Site address"
+                        style="border-radius: 10px;"></textarea>
+                </div>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <label class="form-label fw-bold">PIC Name</label>
+                        <input type="text" id="quickPicName" class="form-control" placeholder="PIC Name"
+                            style="border-radius: 10px;">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-bold">Contact No.</label>
+                        <input type="text" id="quickPicPhone" class="form-control" placeholder="Phone/WA"
+                            style="border-radius: 10px;">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4">
+                <button type="button" class="btn btn-mac-secondary btn-apple-pill"
+                    data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-mac-primary btn-apple-pill" onclick="submitQuickClient()">Save &
+                    Choose Client</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+    let currentDocType = '';
+    const svcPreviewDefault = "{{ svc_preview }}";
+    const xprjPreviewDefault = "{{ xprj_preview }}";
+    const prjPreviewDefault = "{{ prj_preview }}";
+
+    /* Document type selector: SVC, XPRJ, and PRJ share this form. */
+    function handleDocTypeSelect(type) {
+        currentDocType = type;
+        const emptyState = document.getElementById('emptyStatePanel');
+        const formContainer = document.getElementById('formContainerPanel');
+        const docTypeInput = document.getElementById('doc_type');
+        const svcFields = document.getElementById('svcFields');
+        const xprjFields = document.getElementById('xprjFields');
+        const prjFields = document.getElementById('prjFields');
+        const standardWorkFields = document.getElementById('standardWorkFields');
+        const prjWorkFields = document.getElementById('prjWorkFields');
+        const badge = document.getElementById('docTypeBadge');
+        const submitBtn = document.getElementById('submitBtn');
+
+        if (!type) {
+            emptyState.classList.remove('d-none');
+            formContainer.classList.add('d-none');
+            return;
+        }
+
+        emptyState.classList.add('d-none');
+        formContainer.classList.remove('d-none');
+        docTypeInput.value = type;
+
+        const quickClientTitle = document.getElementById('quickClientTitle');
+        if (quickClientTitle) {
+            quickClientTitle.textContent = type === 'svc' ? 'Add SVC Client' : 'Add PRJ / XPRJ Client';
+            document.getElementById('quickClientTypeWrapper').classList.toggle('d-none', type !== 'svc');
+        }
+
+        const isPrj = (type === 'prj');
+
+        svcFields.classList.toggle('d-none', type !== 'svc');
+        xprjFields.classList.toggle('d-none', type !== 'xprj');
+        prjFields.classList.toggle('d-none', type !== 'prj');
+
+        standardWorkFields.classList.toggle('d-none', isPrj);
+        prjWorkFields.classList.toggle('d-none', !isPrj);
+
+        document.querySelectorAll('#standardWorkFields [required]').forEach(el => el.required = !isPrj);
+        document.querySelectorAll('.prj-required').forEach(el => el.required = isPrj);
+        document.querySelectorAll('.xprj-required').forEach(el => el.required = type === 'xprj');
+
+        document.querySelectorAll('#prjWorkFields input, #prjWorkFields textarea, #prjWorkFields select').forEach(el => {
+            el.disabled = !isPrj;
+        });
+
+        submitBtn.disabled = false;
+
+        if (type === 'svc') {
+            badge.textContent = 'SVC DOCUMENT';
+            badge.style.background = '#e0f2fe';
+            badge.style.color = '#0284c7';
+            submitBtn.innerHTML = 'Issue SVC Document';
+            document.getElementById('doc_no_input').value = '';
+        } else if (type === 'xprj') {
+            badge.textContent = 'XPRJ DOCUMENT';
+            badge.style.background = '#fef3c7';
+            badge.style.color = '#d97706';
+            submitBtn.innerHTML = 'Issue XPRJ Document';
+            document.getElementById('doc_no_input').value = '';
+        } else if (type === 'prj') {
+            badge.textContent = 'PRJ DOCUMENT';
+            badge.style.background = '#dcfce7';
+            badge.style.color = '#166534';
+            submitBtn.innerHTML = 'Issue PRJ Document';
+            document.getElementById('doc_no_input').value = '';
+
+            // Ensure at least 1 work item row exists
+            if (document.querySelectorAll('#prjItems .prj-item-row').length === 0) {
+                addPrjItem();
+            }
+            if (document.querySelectorAll('#prjTechnicianTasks .prj-tech-row').length === 0) {
+                addPrjTechnicianTask();
+            }
+            updatePrjItemsStats();
+            updatePrjTechTasksStats();
+        }
+
+        const taskDescInput = document.getElementById('task_description_input');
+        const defaultTaskDesc = "Confirm and analyse the complaint\nCheck the cause of the problem / damage\nRepair the equipment / resolve the issue";
+        if (taskDescInput && !taskDescInput.value.trim()) {
+            taskDescInput.value = defaultTaskDesc;
+        }
+
+        refreshDocNoPreview();
+    }
+
+    function refreshDocNoPreview() {
+        if (!currentDocType) return;
+        const docDate = document.getElementById('doc_date').value;
+        fetch(`/system/api/preview-doc-no?doc_type=${currentDocType}&date=${docDate}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.sequence) {
+                    const input = document.getElementById('doc_no_input');
+                    input.value = data.sequence;
+                    // Numbers are never reused, so a custom number can only go upward.
+                    input.min = data.sequence;
+                }
+            })
+            .catch(err => console.error('Error fetching preview:', err));
+    }
+
+    /* ==========================================================
+       2. SEARCHABLE CLIENT COMBOBOX WITH %KEYWORD% FILTER
+       ========================================================== */
+    function openClientDropdown() {
+        const dropdown = document.getElementById('clientDropdownMenu');
+        dropdown.classList.remove('d-none');
+        filterClientDropdown();
+    }
+
+    function filterClientDropdown() {
+        const dropdown = document.getElementById('clientDropdownMenu');
+        dropdown.classList.remove('d-none');
+        const query = (document.getElementById('clientSearchInput').value || '').toLowerCase().trim();
+        const items = document.querySelectorAll('.client-option-item');
+        let matchCount = 0;
+
+        items.forEach(item => {
+            const name = (item.getAttribute('data-name') || '').toLowerCase();
+            const pic = (item.getAttribute('data-pic') || '').toLowerCase();
+            const phone = (item.getAttribute('data-phone') || '').toLowerCase();
+            const type = (item.getAttribute('data-type') || '').toLowerCase();
+            const address = (item.getAttribute('data-address') || '').toLowerCase();
+
+            // %keyword% substring match across company name, pic, phone, type, and address
+            const isMatch = !query || name.includes(query) || pic.includes(query) || phone.includes(query) || type.includes(query) || address.includes(query);
+
+            if (isMatch) {
+                item.classList.remove('d-none');
+                matchCount++;
+            } else {
+                item.classList.add('d-none');
+            }
+        });
+
+        const matchCountEl = document.getElementById('clientMatchCount');
+        if (matchCountEl) matchCountEl.textContent = `${matchCount} clients`;
+
+        const noMatchEl = document.getElementById('noClientMatch');
+        if (noMatchEl) {
+            if (matchCount === 0 && items.length > 0) {
+                noMatchEl.classList.remove('d-none');
+            } else {
+                noMatchEl.classList.add('d-none');
+            }
+        }
+    }
+
+    function selectClientItem(id, name, pic, phone, type) {
+        document.getElementById('selectedClientId').value = id;
+        const searchInput = document.getElementById('clientSearchInput');
+        let label = name;
+        if (pic) label += ` (PIC: ${pic})`;
+        searchInput.value = label;
+        searchInput.classList.add('bg-light', 'fw-bold', 'text-dark');
+        document.getElementById('clearClientBtn').classList.remove('d-none');
+        document.getElementById('clientDropdownMenu').classList.add('d-none');
+
+        // Mark active item
+        document.querySelectorAll('.client-option-item').forEach(el => {
+            el.classList.toggle('selected', el.getAttribute('data-id') == id);
+        });
+        updateClientFields(id);
+    }
+
+    function updateClientFields(clientId) {
+        const selected = document.querySelector(`.client-option-item[data-id="${clientId}"]`);
+        const address = selected ? (selected.dataset.address || '') : '';
+        const addressField = document.getElementById('docSiteAddress');
+        const projectField = document.getElementById('prjMasterProject');
+
+        // Auto-fill address only if the field is currently empty or matches previous client's address
+        // For simplicity, we'll just overwrite it to the client's master address whenever client changes.
+        addressField.value = address;
+
+        if (projectField) {
+            projectField.disabled = !clientId;
+            Array.from(projectField.options).forEach(option => {
+                if (!option.value) return;
+                option.hidden = option.dataset.clientId !== String(clientId);
+                if (option.hidden && option.selected) projectField.value = '';
+            });
+        }
+        
+        // Skenario 1: Filter PRJ dropdown based on selected Client
+        const prjSelect = document.getElementById('prjIdSelect');
+        if (prjSelect) {
+            Array.from(prjSelect.options).forEach(option => {
+                if (!option.value) return;
+                // Only show if it matches the client (or if client is empty, we might want to show all, but here we just hide non-matches)
+                option.hidden = clientId ? option.dataset.clientId !== String(clientId) : false;
+                if (option.hidden && option.selected) prjSelect.value = '';
+            });
+        }
+    }
+
+    // Skenario 2: Auto-select Client when an PRJ is chosen directly
+    function syncPrjToClient(selectEl) {
+        const selectedOption = selectEl.options[selectEl.selectedIndex];
+        if (!selectedOption || !selectedOption.value) return;
+        
+        const clientId = selectedOption.dataset.clientId;
+        if (clientId) {
+            // Check if we need to change the client
+            const currentClient = document.getElementById('selectedClientId').value;
+            if (currentClient !== clientId) {
+                // Find the client option item in the dropdown
+                const clientItem = document.querySelector(`.client-option-item[data-id="${clientId}"]`);
+                if (clientItem) {
+                    const cName = clientItem.dataset.name || '';
+                    const cPic = clientItem.dataset.pic || '';
+                    const cPhone = clientItem.dataset.phone || '';
+                    const cType = clientItem.dataset.type || '';
+                    // Select it! This will trigger updateClientFields
+                    selectClientItem(clientId, cName, cPic, cPhone, cType);
+                    
+                    // Re-select the PRJ since selectClientItem might have cleared it if it was hidden momentarily
+                    selectEl.value = selectedOption.value;
+                }
+            }
+        }
+    }
+
+    function clearSelectedClient() {
+        document.getElementById('selectedClientId').value = '';
+        const searchInput = document.getElementById('clientSearchInput');
+        searchInput.value = '';
+        searchInput.classList.remove('bg-light', 'fw-bold', 'text-dark');
+        document.getElementById('clearClientBtn').classList.add('d-none');
+        document.querySelectorAll('.client-option-item').forEach(el => el.classList.remove('selected'));
+        updateClientFields('');
+        searchInput.focus();
+        openClientDropdown();
+    }
+
+    // Close dropdown on outside click
+    document.addEventListener('click', function (e) {
+        const wrapper = document.getElementById('clientPickerWrapper');
+        const dropdown = document.getElementById('clientDropdownMenu');
+        if (wrapper && dropdown && !wrapper.contains(e.target)) {
+            dropdown.classList.add('d-none');
+        }
+    });
+
+    // Form submit validation
+    document.addEventListener('DOMContentLoaded', function () {
+        const selectedType = "{{ selected_type }}";
+        if (selectedType === 'svc' || selectedType === 'xprj' || selectedType === 'prj') {
+            document.getElementById('docTypeSelect').value = selectedType;
+            handleDocTypeSelect(selectedType);
+        }
+        const form = document.getElementById('generatorForm');
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                const clientId = document.getElementById('selectedClientId').value;
+                if (!clientId) {
+                    e.preventDefault();
+                    alert('Please choose a Client / Site from the list first.');
+                    const searchInput = document.getElementById('clientSearchInput');
+                    searchInput.focus();
+                    openClientDropdown();
+                    return;
+                }
+                if (currentDocType === 'prj') {
+                    // Serialize PRJ Items to JSON
+                    const items = [];
+                    document.querySelectorAll('#prjItems .prj-item-row').forEach(row => {
+                        const desc = row.querySelector('.prj-desc-input').value.trim();
+                        if (desc) {
+                            items.push({
+                                description: desc,
+                                qty: parseInt(row.querySelector('.prj-qty-input').value) || 1,
+                                uom: row.querySelector('.prj-uom-input').value.trim() || 'Unit'
+                            });
+                        }
+                    });
+                    
+                    if (items.length === 0) {
+                        e.preventDefault();
+                        alert('At least one PRJ work description is required.');
+                        const firstInput = document.querySelector('#prjItems .prj-desc-input');
+                        if (firstInput) firstInput.focus();
+                        return;
+                    }
+                    document.getElementById('prj_items_json').value = JSON.stringify(items);
+
+                    // Serialize Technician Tasks to JSON
+                    const tasks = [];
+                    document.querySelectorAll('#prjTechnicianTasks .prj-tech-row').forEach(row => {
+                        const desc = row.querySelector('.prj-tech-desc-input').value.trim();
+                        if (desc) {
+                            tasks.push({ description: desc });
+                        }
+                    });
+                    document.getElementById('prj_tasks_json').value = JSON.stringify(tasks);
+                }
+            });
+        }
+        addPrjItem();
+        addPrjTechnicianTask();
+    });
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return String(text).replace(/[&<>"']/g, m => map[m]);
+    }
+
+    function updatePrjItemsStats() {
+        const rows = document.querySelectorAll('#prjItems .prj-item-row');
+        const emptyState = document.getElementById('prjItemsEmptyState');
+
+        rows.forEach((row, idx) => {
+            const badge = row.querySelector('.prj-row-badge');
+            if (badge) badge.textContent = (idx + 1);
+        });
+
+        if (emptyState) {
+            emptyState.classList.toggle('d-none', rows.length > 0);
+        }
+    }
+
+    function addPrjItem(description = '', qty = 1, uom = 'Unit') {
+        const container = document.getElementById('prjItems');
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'prj-item-row';
+        rowDiv.innerHTML = `
+            <div class="row g-2 align-items-center">
+                <div class="col-auto" style="width: 38px; text-align: center;">
+                    <span class="prj-row-badge">1</span>
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control form-control-sm prj-desc-input"
+                        value="${description ? escapeHtml(description) : ''}" required style="border-radius: 8px;">
+                </div>
+                <div class="col-auto" style="width: 90px;">
+                    <input type="number" class="form-control form-control-sm text-center font-monospace fw-bold prj-qty-input" 
+                        min="1" value="${qty || 1}" placeholder="1" required style="border-radius: 8px;">
+                </div>
+                <div class="col-auto" style="width: 120px;">
+                    <input type="text" class="form-control form-control-sm prj-uom-input"
+                        list="prjUomSuggestions" value="${uom || 'Unit'}" placeholder="Unit" required style="border-radius: 8px;">
+                </div>
+                <div class="col-auto d-flex" style="width: 50px; justify-content: center;">
+                    <button type="button" class="btn-row-action btn-row-delete" title="Delete Row" onclick="removePrjItemRow(this)">
+                        <i class="fa-solid fa-trash-can" style="font-size: 11px;"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        const uomInput = rowDiv.querySelector('.prj-uom-input');
+        if (uomInput) {
+            uomInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addPrjItem();
+                    const newRows = container.querySelectorAll('.prj-item-row');
+                    const lastRow = newRows[newRows.length - 1];
+                    if (lastRow) {
+                        const input = lastRow.querySelector('.prj-desc-input');
+                        if (input) input.focus();
+                    }
+                }
+            });
+        }
+
+        container.appendChild(rowDiv);
+        updatePrjItemsStats();
+
+        if (!description) {
+            const descInput = rowDiv.querySelector('.prj-desc-input');
+            if (descInput) descInput.focus();
+        }
+    }
+
+    function removePrjItemRow(btn) {
+        const row = btn.closest('.prj-item-row');
+        if (row) {
+            row.style.opacity = '0';
+            row.style.transform = 'translateY(-6px)';
+            row.style.transition = 'all 0.15s ease';
+            setTimeout(() => {
+                row.remove();
+                updatePrjItemsStats();
+            }, 150);
+        }
+    }
+
+    function updatePrjTechTasksStats() {
+        const rows = document.querySelectorAll('#prjTechnicianTasks .prj-tech-row');
+        const emptyState = document.getElementById('prjTechTasksEmptyState');
+
+        rows.forEach((row, idx) => {
+            const badge = row.querySelector('.prj-row-badge');
+            if (badge) badge.textContent = (idx + 1);
+        });
+
+        if (emptyState) {
+            emptyState.classList.toggle('d-none', rows.length > 0);
+        }
+    }
+
+    function addPrjTechnicianTask(description = '') {
+        const container = document.getElementById('prjTechnicianTasks');
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'prj-item-row prj-tech-row';
+        rowDiv.innerHTML = `
+            <div class="row g-2 align-items-center">
+                <div class="col-auto" style="width: 38px; text-align: center;">
+                    <span class="prj-row-badge">1</span>
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control form-control-sm prj-tech-desc-input"
+                        placeholder="Technician task description (e.g. install the device, configure it and test it)" 
+                        value="${description ? escapeHtml(description) : ''}" style="border-radius: 8px;">
+                </div>
+                <div class="col-auto d-flex" style="width: 50px; justify-content: center;">
+                    <button type="button" class="btn-row-action btn-row-delete" title="Delete Row" onclick="removeTechItemRow(this)">
+                        <i class="fa-solid fa-trash-can" style="font-size: 11px;"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        const input = rowDiv.querySelector('.prj-tech-desc-input');
+        if (input) {
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addPrjTechnicianTask();
+                    const newRows = container.querySelectorAll('.prj-tech-row');
+                    const lastRow = newRows[newRows.length - 1];
+                    if (lastRow) {
+                        const nextInput = lastRow.querySelector('.prj-tech-desc-input');
+                        if (nextInput) nextInput.focus();
+                    }
+                }
+            });
+        }
+
+        container.appendChild(rowDiv);
+        updatePrjTechTasksStats();
+
+        if (!description && input) {
+            input.focus();
+        }
+    }
+
+    function removeTechItemRow(btn) {
+        const row = btn.closest('.prj-tech-row');
+        if (row) {
+            row.style.opacity = '0';
+            row.style.transform = 'translateY(-6px)';
+            row.style.transition = 'all 0.15s ease';
+            setTimeout(() => {
+                row.remove();
+                updatePrjTechTasksStats();
+            }, 150);
+        }
+    }
+
+    /* ==========================================================
+       3. QUICK ADD CLIENT MODAL
+       ========================================================== */
+    function submitQuickClient() {
+        const name = document.getElementById('quickCompanyName').value.trim();
+        const address = document.getElementById('quickAddress').value.trim();
+        const picName = document.getElementById('quickPicName').value.trim();
+        const picPhone = document.getElementById('quickPicPhone').value.trim();
+        // Only the SVC version of the popup asks for (and requires) a client type.
+        const clientType = currentDocType === 'svc' ? document.getElementById('quickClientType').value : '';
+
+        if (!name) {
+            alert('Company Name is required.');
+            return;
+        }
+        if (currentDocType === 'svc' && !clientType) {
+            alert('Client Type is required.');
+            return;
+        }
+
+        fetch('/system/api/clients/quick-add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                company_name: name,
+                doc_type: currentDocType,
+                client_type: clientType,
+                address: address,
+                pic_name: picName,
+                pic_phone: picPhone
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const client = data.client;
+                    const container = document.getElementById('clientListContainer');
+
+                    // Create new client option DOM element
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'client-option-item p-2 px-3 border-bottom';
+                    itemDiv.setAttribute('data-id', client.id);
+                    itemDiv.setAttribute('data-name', client.company_name);
+                    itemDiv.setAttribute('data-pic', client.pic_name || '');
+                    itemDiv.setAttribute('data-phone', client.pic_phone || '');
+                    itemDiv.setAttribute('data-type', client.client_type || '');
+                    itemDiv.setAttribute('data-address', client.address || '');
+
+                    itemDiv.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong class="text-dark client-name-text">${escapeHtml(client.company_name)}</strong>
+                                ${client.pic_name ? `<div class="small text-muted client-pic-text mt-1"><i class="fa-solid fa-user text-secondary me-1"></i> PIC: <strong>${escapeHtml(client.pic_name)}</strong> ${client.pic_phone ? '(' + escapeHtml(client.pic_phone) + ')' : ''}</div>` : ''}
+                                ${client.address ? `<div class="small text-secondary text-truncate client-addr-text mt-1" style="max-width: 480px; font-size: 11.5px;"><i class="fa-solid fa-location-dot text-danger me-1"></i> ${escapeHtml(client.address)}</div>` : ''}
+                            </div>
+                            <span class="badge bg-success-lt small ms-2">New</span>
+                        </div>
+                    `;
+
+                    itemDiv.onclick = function () {
+                        selectClientItem(client.id, client.company_name, client.pic_name, client.pic_phone, '');
+                    };
+
+                    container.prepend(itemDiv);
+
+                    // Auto-select newly created client
+                    selectClientItem(client.id, client.company_name, client.pic_name, client.pic_phone, '');
+
+                    // Reset modal fields & close
+                    document.getElementById('quickCompanyName').value = '';
+                    document.getElementById('quickAddress').value = '';
+                    document.getElementById('quickPicName').value = '';
+                    document.getElementById('quickPicPhone').value = '';
+                    document.getElementById('quickClientType').value = '';
+
+                    const modalEl = document.getElementById('modalQuickAddClient');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+                } else {
+                    alert('Could not add the client: ' + data.message);
+                }
+            })
+            .catch(err => {
+                alert('Terjadi kesalahan koneksi.');
+                console.error(err);
+            });
+    }
+</script>
+{% endblock %}

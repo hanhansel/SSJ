@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>No print template - {{ label }}</title>
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; color: #1e293b; max-width: 820px; margin: 40px auto; padding: 0 16px; }
+        h1 { font-size: 22px; margin-bottom: 8px; }
+        h2 { font-size: 16px; margin-top: 28px; }
+        p { line-height: 1.55; }
+        code { background: #f1f5f9; padding: 1px 6px; border-radius: 4px; font-size: 13px; }
+        table { border-collapse: collapse; width: 100%; }
+        td { border-bottom: 1px solid #e2e8f0; padding: 7px 8px; vertical-align: top; font-size: 14px; }
+        td:first-child { white-space: nowrap; }
+    </style>
+</head>
+<body>
+    <h1>No print template for {{ label }} documents</h1>
+    <p>
+        SSJ has no built-in print layouts. Add your own in <b>Settings &rarr; Print Templates</b>:
+        download the starter file for {{ label }}, design the page in HTML, then upload it.
+        Templates are rendered with <a href="https://jinja.palletsprojects.com/">Jinja2</a>, so a value is printed
+        with <code>{{ '{{ variable }}' }}</code> and a list is printed with <code>{{ '{% for ... %}' }}</code>.
+    </p>
+
+    <h2>Variables available</h2>
+    <table>
+        {% for name, meaning in variables %}
+        <tr>
+            <td><code>{{ '{{ ' ~ name ~ ' }}' }}</code></td>
+            <td>{{ meaning }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

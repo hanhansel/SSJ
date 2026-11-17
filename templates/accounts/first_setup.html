@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Initial Setup - SSJ</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/style.css') }}">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center;
+            background: linear-gradient(135deg, #0f172a, #1e293b, #2a384d);
+            /* Hide only sideways overflow from the blurred shapes; short screens can still scroll. */
+            overflow-x: hidden;
+            padding: 24px 0; box-sizing: border-box;
+        }
+
+        /* Ornamen background */
+        .bg-shape { position: absolute; border-radius: 50%; filter: blur(60px); z-index: 0; }
+        .bg-shape-1 { width: 400px; height: 400px; background: rgba(255,255,255,0.2); top: -100px; left: -100px; }
+        .bg-shape-2 { width: 500px; height: 500px; background: rgba(59, 130, 246, 0.4); bottom: -150px; right: -100px; }
+
+        /* KARTU SPLIT SCREEN GLASSMORPHISM */
+        .glass-split-container {
+            position: relative; z-index: 1; display: flex;
+            width: 1000px; max-width: 95%; min-height: 550px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(30px); /* Heavy frosted effect */
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 24px; box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        /* LEFT SIDE: FORM */
+        .form-side {
+            flex: 1; padding: 50px; display: flex; flex-direction: column; justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .brand-logo { font-size: 32px; font-weight: 700; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
+        .form-side h2 { margin: 0 0 1px 0; font-size: 28px; }
+        .form-side p { color: rgba(255,255,255,0.8); font-size: 14px; margin-bottom: 30px; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: rgba(255,255,255,0.9); }
+        .form-control {
+            width: 100%; padding: 12px 16px; background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(255,255,255,0.5); border-radius: 10px;
+            font-size: 14px; color: #1e293b; outline: none; transition: 0.3s;
+            box-sizing: border-box;
+        }
+        .form-control:focus { background: #ffffff; box-shadow: 0 0 0 4px rgba(255,255,255,0.3); }
+        .form-control.is-invalid { border: 2px solid #f87171; }
+        .field-error { display: block; margin-top: 6px; font-size: 13px; font-weight: 500; color: #fca5a5; }
+
+        /* Button colour at rest */
+    .btn-submit {
+        width: 100%; padding: 14px; margin-top: 15px;
+        background: #3b364c; 
+        color: white; 
+        border: 1px solid rgba(255,255,255,0.1); /* Default thin border */
+        border-radius: 12px;
+        font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.3s ease;
+    }
+
+    /* Light blue outline glows on mouse hover */
+    .btn-submit:hover {
+        background: #4a4563; 
+        transform: translateY(-2px);
+    
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.4); /* Outline light blue glow */
+        border-color: #60a5fa; /* Turn the border light blue */
+    }
+
+    /* Light blue outline when the button is clicked (Active/Focus) */
+    .btn-submit:focus {
+        outline: none; /* Turn off the browser's default outline */
+        box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.6);
+    }
+
+        /* RIGHT SIDE: VISUAL / ILLUSTRATION */
+        .visual-side {
+            flex: 1.2; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: rgba(0, 0, 0, 0.05); position: relative; padding: 40px; text-align: center;
+        }
+
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .glass-split-container { flex-direction: column; }
+            .visual-side { display: none; } /* Hide the illustration on phones */
+        }
+    </style>
+    <script src="{{ url_for('static', filename='assets/js/password-reveal.js') }}" defer></script>
+</head>
+<body>
+    <div class="bg-shape bg-shape-1"></div>
+    <div class="bg-shape bg-shape-2"></div>
+
+    <div class="glass-split-container">
+        <div class="form-side">
+            <h2>Initial Setup - SSJ</h2>
+            <p>Enter your details below to create the first SSJ account (access to every menu).</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+            <div role="alert" style="margin-bottom: 16px; padding: 10px 14px; border-radius: 10px; font-size: 14px;
+                        {% if category == 'danger' %}background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;
+                        {% else %}background: #fef3c7; color: #92400e; border: 1px solid #fde68a;{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endwith %}
+
+            {% set errors = errors or {} %}
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group">
+                    <label class="form-label" for="username">Admin Username</label>
+                    <input type="text" id="username" class="form-control{{ ' is-invalid' if errors.username }}"
+                           name="username" placeholder="e.g. admin.main" value="{{ form_username or '' }}"
+                           maxlength="100" required {{ 'autofocus' if not errors or errors.username }}
+                           {% if errors.username %}aria-invalid="true" aria-describedby="username-error"{% endif %}>
+                    {% if errors.username %}<span class="field-error" id="username-error">{{ errors.username }}</span>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="email">Active Email</label>
+                    <input type="email" id="email" class="form-control{{ ' is-invalid' if errors.email }}"
+                           name="email" placeholder="admin@domain.com" value="{{ form_email or '' }}"
+                           maxlength="120" required {{ 'autofocus' if errors.email and not errors.username }}
+                           {% if errors.email %}aria-invalid="true" aria-describedby="email-error"{% endif %}>
+                    {% if errors.email %}<span class="field-error" id="email-error">{{ errors.email }}</span>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" class="form-control{{ ' is-invalid' if errors.password }}"
+                           name="password" placeholder="At least 8 characters" minlength="8" required
+                           {{ 'autofocus' if errors.password and not errors.username and not errors.email }}
+                           {% if errors.password %}aria-invalid="true" aria-describedby="password-error"{% endif %}>
+                    {% if errors.password %}<span class="field-error" id="password-error">{{ errors.password }}</span>{% endif %}
+                </div>
+                <button type="submit" class="btn-submit">Create Account</button>
+            </form>
+        </div>
+
+        <div class="visual-side">
+           <div class="brand-logo">
+                <img src="{{ url_for('static', filename='assets/images/logo.png') }}" alt="SSJ logo" style="height: 200px; width: auto;">
+            </div>
+        </div>
+    </div>
+    <script>
+        // Native validation popups follow the browser's locale; force English messages instead.
+        (function () {
+            function englishMessage(input) {
+                var v = input.validity;
+                if (v.valueMissing) return 'Please fill out this field.';
+                if (v.typeMismatch && input.type === 'email') return 'Please enter a valid email address.';
+                if (v.tooShort) {
+                    return 'Please lengthen this text to ' + input.minLength + ' characters or more (you are currently using '
+                        + input.value.length + ' character' + (input.value.length === 1 ? '' : 's') + ').';
+                }
+                if (v.tooLong) return 'Please shorten this text to ' + input.maxLength + ' characters or fewer.';
+                return '';
+            }
+            document.querySelectorAll('form input:not([type="hidden"])').forEach(function (input) {
+                input.addEventListener('invalid', function () {
+                    input.setCustomValidity('');
+                    input.setCustomValidity(englishMessage(input));
+                });
+                // Clear the custom message on edit so the browser re-checks the new value.
+                input.addEventListener('input', function () { input.setCustomValidity(''); });
+            });
+        })();
+    </script>
+</body>
+</html>

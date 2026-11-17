@@ -1,0 +1,1 @@
+# Initialize technician blueprint

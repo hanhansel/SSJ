@@ -1,0 +1,47 @@
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+
+# Databases & Runtime storage
+instance/
+*.db
+*.sqlite
+*.db-shm
+*.db-wal
+uploads/
+static/uploads/
+data_storage/
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+
+# Installer output and downloaded binaries (rebuilt or re-downloaded, never versioned)
+installer_output/
+caddy_windows_amd64.exe
+caddy.exe
+
+# Testing & Linting
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Logs & Temporary
+*.log
+scratch/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

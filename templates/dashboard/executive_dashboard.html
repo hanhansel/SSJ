@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<style>
+    .kpi-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(16px);
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        transition: transform 0.2s ease;
+    }
+
+    .kpi-card:hover {
+        transform: translateY(-2px);
+    }
+
+    /* KPI cards that open their active document list. */
+    a.kpi-card {
+        color: inherit;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    a.kpi-card:hover {
+        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+    }
+
+    .kpi-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 24px;
+        flex-shrink: 0;
+    }
+
+    .kpi-title {
+        font-size: 12px;
+        color: #86868b;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+
+    .kpi-value {
+        font-size: 30px;
+        font-weight: 800;
+        color: #1d1d1f;
+        line-height: 1;
+    }
+</style>
+
+<div class="page-container-clean container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="page-title-clean" id="dashboard-datetime">{{ (now | format_date(false)) if now else
+                ((today | format_date(false)) if today else '') }}</h1>
+        </div>
+        {% if can('documents') %}
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('documents.generator') }}" class="btn btn-mac-primary" style="border-radius: 20px; padding: 8px 20px; font-weight: 600;">
+                <i class="fa-solid fa-plus me-1"></i> Create New Document
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="row g-4 mb-4">
+        {% if can('scheduling') %}
+        <div class="col-md-3">
+            <a href="{{ url_for('scheduling.index') }}" class="kpi-card">
+                <div class="kpi-icon bg-danger-lt text-danger">
+                    <i class="fa-solid fa-calendar-xmark"></i>
+                </div>
+                <div>
+                    <div class="kpi-title">Not Scheduled</div>
+                    <div class="kpi-value">{{ unscheduled_docs }}</div>
+                    {% if unscheduled_mc %}
+                    <div class="small text-danger fw-semibold mt-1">{{ unscheduled_mc }} SVC Contract</div>
+                    {% endif %}
+                </div>
+            </a>
+        </div>
+        {% endif %}
+        {% if can('documents') %}
+        <div class="col-md-3">
+            <a href="{{ url_for('documents.list_docs', type='svc') }}" class="kpi-card">
+                <div class="kpi-icon bg-blue-lt text-blue">
+                    <i class="fa-solid fa-wrench"></i>
+                </div>
+                <div>
+                    <div class="kpi-title">Active SVC</div>
+                    <div class="kpi-value">{{ active_svc }}</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('documents.prj_list') }}" class="kpi-card">
+                <div class="kpi-icon bg-success-lt text-success">
+                    <i class="fa-solid fa-file-signature"></i>
+                </div>
+                <div>
+                    <div class="kpi-title">Active PRJ</div>
+                    <div class="kpi-value">{{ active_prj }}</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('documents.list_docs', type='xprj') }}" class="kpi-card">
+                <div class="kpi-icon bg-warning-lt text-warning">
+                    <i class="fa-solid fa-file-circle-plus"></i>
+                </div>
+                <div>
+                    <div class="kpi-title">Active XPRJ</div>
+                    <div class="kpi-value">{{ active_xprj }}</div>
+                </div>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- MAIN TWO-COLUMN CONTENT -->
+    <div class="row g-4">
+        {% if can('scheduling') %}
+        <!-- TODAY'S SCHEDULE RADAR -->
+        <div class="col-lg-6">
+            <div class="clean-card h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="fw-bold mb-0">
+                        <i class="fa-solid fa-calendar-day text-primary me-2"></i> Today's Technician Schedule
+                    </h3>
+                    <a href="{{ url_for('scheduling.index') }}" class="small fw-bold text-primary text-decoration-none">
+                        Open Scheduler <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+
+                <div class="list-group list-group-flush">
+                    {% for b in todays_blocks %}
+                    {% set doc = b.document %}
+                    <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="avatar avatar-md rounded-circle bg-light text-dark fw-bold border">
+                                {{ b.technician.name[0] | upper if b.technician else 'T' }}
+                            </div>
+                            <div>
+                                <strong class="text-dark">{{ b.technician.name if b.technician else '-' }}</strong>
+                                <div class="text-muted small">
+                                    {% if b.doc_type == 'leave' %}
+                                    <span class="text-danger fw-bold"><i class="fa-solid fa-bed me-1"></i> {{
+                                        b.leave_reason or 'Leave' }}</span>
+                                    {% elif doc %}
+                                    <span>{{ doc.client.company_name if doc.client else '-' }} ({{ doc.display_no }})</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            {% if b.doc_type == 'leave' %}
+                            <span class="badge bg-danger-lt">Leave</span>
+                            {% elif doc %}
+                            <span class="badge bg-blue-lt text-primary">{{ doc.status }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fa-solid fa-calendar-check fa-2x mb-2 text-secondary d-block"></i>
+                        No technicians are scheduled today.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if can('documents') %}
+        <!-- LATEST DOCUMENTS -->
+        <div class="col-lg-6">
+            <div class="clean-card h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="fw-bold mb-0">
+                        <i class="fa-solid fa-clock-rotate-left text-primary me-2"></i> Latest Issued Documents
+                    </h3>
+                    <a href="{{ url_for('documents.list_docs') }}"
+                        class="small fw-bold text-primary text-decoration-none">
+                        View All <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+
+                <div class="list-group list-group-flush">
+                    {% for item in recent_svc %}
+                    <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-primary-lt me-1 font-monospace">SVC</span>
+                            <a href="{{ url_for('documents.view_doc', doc_type='svc', doc_id=item.id) }}"
+                                class="fw-bold text-dark text-decoration-none hover-primary">
+                                {{ item.doc_no }}
+                            </a>
+                            <div class="text-muted small">{{ item.client.company_name if item.client else '-' }}</div>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-light text-dark border small">{{ item.status }}</span>
+                            <div class="text-muted small font-monospace">{{ (item.date | format_short) if item.date
+                                else '-' }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    {% for item in recent_xprj %}
+                    <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-warning-lt me-1 font-monospace">XPRJ</span>
+                            <a href="{{ url_for('documents.view_doc', doc_type='xprj', doc_id=item.id) }}"
+                                class="fw-bold text-dark text-decoration-none hover-primary">
+                                {{ item.doc_no }}
+                            </a>
+                            <div class="text-muted small">{{ item.client.company_name if item.client else '-' }}</div>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-light text-dark border small">{{ item.status }}</span>
+                            <div class="text-muted small font-monospace">{{ (item.date | format_short) if item.date
+                                else '-' }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    {% if not recent_svc and not recent_xprj %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fa-solid fa-folder-open fa-2x mb-2 text-secondary d-block"></i>
+                        No documents have been issued yet.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if not can('documents', 'scheduling') %}
+    <div class="clean-card text-center text-muted py-5">
+        <i class="fa-solid fa-lock fa-2x mb-2 text-secondary d-block"></i>
+        The Dashboard summarises Documents and Scheduling. Your account does not have access to either menu;
+        use the menu on the side, or contact whoever manages Access Management.
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function updateDashboardDate() {
+        const el = document.getElementById('dashboard-datetime');
+        if (!el) return;
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+        el.textContent = dateStr;
+    }
+    updateDashboardDate();
+</script>
+{% endblock %}
