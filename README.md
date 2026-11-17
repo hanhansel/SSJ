@@ -221,6 +221,6 @@ Devices on the local network open SSJ at `http://<server-ip>:32425`.
 **Author:** **Hansel Sebastian**, *Data Science Student @ Bina Nusantara University*
 
 [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/hanhansel)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](www.linkedin.com/in/hansel-sebastian-5a19b8245)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/hansel-sebastian-5a19b8245)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
