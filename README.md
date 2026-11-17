@@ -216,13 +216,11 @@ Devices on the local network open SSJ at `http://<server-ip>:32425`.
 
 **Acknowledgements:** My internship supervisors, for approving the project, explaining the company's workflow, and letting me build and test SSJ on its real processes. [Claude](https://www.anthropic.com/claude) helped me plan features, write and debug code, and translate the app into English.
 
-
-
 **License:** No license. All rights reserved. This repository is shared to show my work; please ask before reusing any of it.
 
 **Author:** **Hansel Sebastian**, *Data Science Student @ Bina Nusantara University*
 
 [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/hanhansel)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/[TO_FILL])
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](www.linkedin.com/in/hansel-sebastian-5a19b8245)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
