@@ -133,46 +133,6 @@ flowchart LR
 
 **Matching imported rows to existing clients.** The office's old Excel recaps wrote the same client in many ways, different spellings, missing information (phone numbers, address, etc..), or several branches with the same name. A straight name match either created duplicate clients or merged different sites into one. I settled on a different matching rule per document type (for example, name, client type, contact person, and phone for service visits, but name and address for projects), and added a preview step where the user can pick the right existing client before anything is saved. I learned that real-world data is never as clean as the import code expects, and that letting people confirm uncertain matches beats trying to guess or having the system account for every case automatically.
 
-**Scheduling technicians automatically.** The first Auto-Suggest engine placed documents one by one with a greedy approach. It was fast, but an early choice could block a better arrangement later, so its suggestions weren't reliable enough for the office to implement. Instead of shipping something half-working, I kept drag-and-drop scheduling as the main way to plan, removed the engine from the public version, and moved the research to a separate branch with synthetic data. I learned that scheduling is a much harder problem than it looks, and that a dependable manual tool is better than an automatic one people have to double-check.
-
-**Keeping the server running on a PC nobody maintains.** SSJ runs on one ordinary office PC, with no dedicated IT staff to restart it or take backups. I built the Windows Controller to register scheduled tasks that start the server and run backups even when nobody is logged in, without storing a Windows password. Old backups are pruned automatically, and a full snapshot (database and uploaded photos) can be exported and restored. I learned that deployment and recovery are part of the product, because an app is only useful if it's still running in the future.
-
-**Publishing a public version without leaking company data.** I wanted to show the project publicly, but the original code contained company names, sample client data and print layouts, and its whole interface was in Bahasa Indonesia. I kept the office code and the public code on separate branches, wrote a script that replaces names and scans for anything that could still leak, and translated the app into English with Claude's help. Only the cleaned branch is ever pushed to GitHub. I learned how easily private details can hide in code, in sample files, comments, and old commits, and why the publishing and version control process should check for them, not just with my own eyes.
-
-
-## <ins>Project Structure</ins>
-
-```
-SSJ/
-├── apps/
-│   ├── authentication/      # login, first-admin setup, password reset by email code
-│   ├── core/                # configuration, access checks, dates, uploads, document numbering
-│   ├── documents/           # SVC, PRJ, XPRJ, HO and Master Project pages, Excel import
-│   ├── scheduling/          # calendar, Auto-Suggest endpoint, engine input
-│   │   └── engine/          # scheduling engine (a stub in this version)
-│   ├── services/            # import, export, print template and document logic
-│   ├── system/              # dashboard, settings, clients, accounts
-│   ├── technician/          # phone pages for technicians
-│   └── models.py            # database models
-├── controller/              # PySide6 Windows Controller
-├── docs/ssj_schema.dbml     # database schema
-├── migrations/              # Alembic migrations
-├── static/                  # CSS, JavaScript, images
-├── templates/               # Jinja2 pages
-├── tests/                   # unittest suite on in-memory SQLite
-├── run.py                   # app factory and development server
-├── serve.py                 # production server (Waitress)
-├── requirements.txt
-├── requirements-controller.txt
-└── README.md
-```
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
----
-
-## <ins>Getting Started</ins>
-
 ```powershell
 # 1. Clone
 git clone https://github.com/hanhansel/SSJ.git
