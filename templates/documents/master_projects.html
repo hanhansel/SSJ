@@ -1,0 +1,708 @@
+{% extends "base.html" %}
+{% block page_title %}{{ 'Completed Master Project Data' if is_storage else 'Master Project' }}{% endblock %}
+{% block content %}
+<style>
+    /* APPLE CLEAN MINIMALIST DESIGN SYSTEM */
+    .btn-apple-pill {
+        border-radius: 20px !important;
+        padding: 8px 20px !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .btn-apple-pill:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 113, 227, 0.25);
+    }
+
+    .apple-input {
+        border-radius: 12px !important;
+        border: 1.5px solid #e2e8f0 !important;
+        padding: 9px 14px !important;
+        font-size: 13.5px !important;
+        background: #ffffff !important;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+    }
+
+    .apple-input:focus {
+        border-color: #0071e3 !important;
+        box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12) !important;
+    }
+
+    .list-search {
+        border-radius: 20px !important;
+        padding: 8px 34px 8px 38px !important;
+        width: 260px;
+        border: 1px solid #e2e8f0 !important;
+        background: #fafafa !important;
+        font-size: 13.5px !important;
+    }
+
+    .page-pill {
+        min-width: 34px;
+        height: 34px;
+        padding: 0 10px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 600;
+        border: 1px solid #e2e8f0;
+        background: #ffffff;
+        color: #475569;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+
+    .page-pill:hover {
+        background: #f1f5f9;
+        color: #0071e3;
+    }
+
+    .page-pill.active {
+        background: #0071e3;
+        color: #ffffff;
+        border-color: #0071e3;
+        box-shadow: 0 2px 8px rgba(0, 113, 227, 0.3);
+    }
+
+    .page-pill.disabled {
+        opacity: 0.4;
+        pointer-events: none;
+    }
+
+    .mp-client-option {
+        cursor: pointer;
+        transition: 0.15s;
+    }
+
+    .mp-client-option:hover {
+        background: #f5f5f7;
+    }
+
+    .mp-client-option.selected {
+        background: rgba(0, 113, 227, 0.08);
+    }
+
+    /* TABLE LINKED PRJ PILL */
+    .apple-table-prj-pill {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(0, 113, 227, 0.08);
+        color: #0071e3;
+        border: 1px solid rgba(0, 113, 227, 0.18);
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .apple-table-prj-pill:hover {
+        background: #0071e3;
+        color: #ffffff !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(0, 113, 227, 0.25);
+    }
+
+    .apple-table-prj-pill:hover i {
+        color: #ffffff !important;
+    }
+
+    .apple-table-prj-empty {
+        display: inline-flex;
+        align-items: center;
+        background: #f8fafc;
+        color: #94a3b8;
+        border: 1px solid #e2e8f0;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+
+    /* MODAL LINKED PRJ HIGHLIGHT CARD */
+    .apple-prj-highlight-card {
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 14px 16px;
+        margin-top: 18px;
+        transition: all 0.2s ease;
+    }
+
+    .apple-prj-highlight-card:hover {
+        border-color: #cbd5e1;
+        background: #f8fafc;
+    }
+
+    .apple-link-icon-badge {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: rgba(0, 113, 227, 0.1);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+
+    .apple-prj-label {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #1e293b;
+        letter-spacing: -0.2px;
+    }
+
+    .apple-count-pill {
+        background: #e0f2fe;
+        color: #0284c7;
+        font-weight: 700;
+        font-size: 11px;
+        padding: 3px 10px;
+        border-radius: 20px;
+    }
+
+    .apple-doc-pill {
+        display: inline-flex;
+        align-items: center;
+        background: #ffffff;
+        color: #0071e3;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 6px 11px;
+        font-size: 12px;
+        text-decoration: none;
+        transition: all 0.18s ease;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    .apple-doc-pill:hover {
+        background: #0071e3;
+        color: #ffffff !important;
+        border-color: #0071e3;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(0, 113, 227, 0.25);
+    }
+
+    .apple-doc-pill:hover i {
+        color: #ffffff !important;
+    }
+
+    .kpi-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .kpi-good {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .kpi-bad {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .kpi-need {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    .kpi-none {
+        background: #f1f5f9;
+        color: #94a3b8;
+    }
+
+    .kpi-table {
+        width: 100%;
+        font-size: 12.5px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .kpi-table th {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: .4px;
+        color: #64748b;
+        padding: 6px 8px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .kpi-table td {
+        padding: 8px;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: top;
+    }
+
+    .kpi-table tr.kpi-child td {
+        background: #f8fafc;
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+
+    .kpi-days {
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .kpi-dates {
+        color: #64748b;
+        font-size: 11.5px;
+    }
+
+    .kpi-zero {
+        color: #b45309;
+        font-weight: 700;
+    }
+
+    .filter-select {
+        border-radius: 20px !important;
+        border: 1px solid #e2e8f0 !important;
+        background-color: #fafafa !important;
+        font-size: 13.5px !important;
+        padding: 8px 34px 8px 14px !important;
+        width: auto;
+    }
+</style>
+
+{% macro kpi_badge(kpi) -%}
+{% if kpi.status == 'Good' %}<span class="kpi-badge kpi-good"><i class="fa-solid fa-circle-check"></i> Good</span>
+{% elif kpi.status == 'Bad' %}<span class="kpi-badge kpi-bad"><i class="fa-solid fa-circle-xmark"></i> Bad</span>
+{% elif kpi.status %}<span class="kpi-badge kpi-need"><i class="fa-solid fa-triangle-exclamation"></i> Need Data
+    Input</span>
+{% else %}<span class="kpi-badge kpi-none">-</span>{% endif %}
+{%- endmacro %}
+
+{% macro kpi_cells(row) -%}
+<td>
+    <div class="kpi-days">{{ row.est_days }} Days</div>
+    <div class="kpi-dates">{{ (row.est_start | format_date(false)) if row.est_start else '-' }} &rarr; {{ (row.est_end |
+        format_date(false)) if row.est_end else '-' }}</div>
+</td>
+<td>
+    {% if row.real_days %}
+    <div class="kpi-days">{{ row.real_days }} Days</div>
+    <div class="kpi-dates">{{ row.real_start | format_date(false) }} &rarr; {{ row.real_end | format_date(false) }}</div>
+    {% else %}
+    <div class="kpi-zero">0 Days</div>
+    <div class="kpi-dates">Not scheduled yet</div>
+    {% endif %}
+</td>
+{%- endmacro %}
+
+<div class="page-container-clean container-fluid">
+    <!-- HEADER TITLE & CONTROLS -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h1 class="page-title-clean">{{ 'Completed Master Project Data' if is_storage else 'Master Project' }}</h1>
+        </div>
+        {% set list_endpoint = 'documents.completed_master_projects' if is_storage else 'documents.master_projects' %}
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <form method="get" class="d-flex align-items-center gap-2 flex-wrap m-0">
+                {% if not is_storage %}
+                <select class="form-select filter-select" name="status" onchange="this.form.submit()"
+                    aria-label="Filter status">
+                    <option value="" {{ 'selected' if not status_filter }}>All Statuses</option>
+                    <option value="Online" {{ 'selected' if status_filter=='Online' }}>Online</option>
+                    <option value="Hold" {{ 'selected' if status_filter=='Hold' }}>Hold</option>
+                </select>
+                {% endif %}
+                <select class="form-select filter-select" name="kpi" onchange="this.form.submit()"
+                    aria-label="Filter KPI">
+                    <option value="" {{ 'selected' if not kpi_filter }}>All KPIs</option>
+                    <option value="good" {{ 'selected' if kpi_filter=='good' }}>Good</option>
+                    <option value="bad" {{ 'selected' if kpi_filter=='bad' }}>Bad</option>
+                    <option value="need" {{ 'selected' if kpi_filter=='need' }}>Need Data Input</option>
+                    <option value="none" {{ 'selected' if kpi_filter=='none' }}>No PRJ yet</option>
+                </select>
+                <div class="position-relative">
+                    <i class="fa-solid fa-search position-absolute text-muted"
+                        style="left:14px;top:50%;transform:translateY(-50%);font-size:13px"></i>
+                    <input class="form-control list-search" name="q" value="{{ search }}"
+                        placeholder="Search title or client...">
+                    {% if search %}
+                    <a href="{{ url_for(list_endpoint, status=status_filter or None, kpi=kpi_filter or None) }}"
+                        class="position-absolute text-muted" style="right:13px;top:50%;transform:translateY(-50%)">
+                        <i class="fa-solid fa-xmark"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+            <a class="btn btn-mac-secondary btn-apple-pill" href="{{ url_for('documents.export_master_projects') }}"
+                title="Download every Master Project (Online, Hold and Completed)">
+                <i class="fa-solid fa-file-export text-success me-1"></i> Export Excel
+            </a>
+            {% if not is_storage %}
+            <button class="btn btn-mac-primary btn-apple-pill" data-bs-toggle="modal"
+                data-bs-target="#createProjectModal">
+                <i class="fa-solid fa-plus me-1"></i>New MP
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- CLEAN TABLE CARD -->
+    <div class="clean-card">
+        <div class="table-responsive">
+            <table class="table-clean">
+                <thead>
+                    <tr>
+                        <th style="width: 280px;">Master Project</th>
+                        <th>Client / Site</th>
+                        <th style="width: 200px;">PRJ Count</th>
+                        <th style="width: 210px;">KPI Project</th>
+                        <th style="width: 140px;">Status</th>
+                        <th style="width: 90px; text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in projects %}
+                    <tr>
+                        <td>
+                            <strong><i class="fa-regular fa-folder-open text-primary me-2"></i>{{ project.name
+                                }}</strong>
+                            {% if project.work_scope %}<br><small class="text-dark" style="white-space: pre-line;"><i
+                                    class="fa-solid fa-briefcase text-muted me-1"></i>{{ project.work_scope }}</small>{%
+                            endif %}
+                            {% if project.notes %}<br><small class="text-muted">{{ project.notes }}</small>{% endif %}
+                        </td>
+                        <td>
+                            <strong>{{ project.client.company_name }}</strong>
+                            <br><small class="text-muted">{{ project.site_address or '-' }}</small>
+                        </td>
+                        <td>
+                            {% if project.prjs|length > 0 %}
+                            <a href="#" class="apple-table-prj-pill" data-bs-toggle="modal"
+                                data-bs-target="#editProject{{ project.id }}" title="View linked PRJs">
+                                <i class="fa-solid fa-link me-1 text-primary"></i>
+                                <span class="font-monospace fw-bold me-1">{{ project.prjs|length }}</span>
+                                <span>linked PRJ</span>
+                            </a>
+                            {% else %}
+                            <span class="apple-table-prj-empty">0 PRJ</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% set kpi = kpi_by_project[project.id] %}
+                            {{ kpi_badge(kpi) }}
+                            {% if kpi.status %}<div class="kpi-dates mt-1">Estimated {{ kpi.total_est }} Days |
+                                Actual: {{ kpi.total_real }} Days</div>{% endif %}
+                        </td>
+                        <td>
+                            {% if project.status == 'Online' %}<span class="status-badge status-online">Online</span>
+                            {% elif project.status == 'Hold' %}<span class="status-badge status-onhold"
+                                title="Its PRJs are hidden from Scheduling and the technician app">Hold</span>
+                            {% else %}<span class="status-badge status-completed">Completed</span>{% endif %}
+                        </td>
+                        <td style="text-align: center;">
+                            <button class="btn-action" title="View / edit project details" data-bs-toggle="modal"
+                                data-bs-target="#editProject{{ project.id }}">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted" style="padding: 40px;">
+                            <i class="fa-regular fa-folder-open mb-2 d-block text-muted" style="font-size: 28px;"></i>
+                            No Master Projects found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- PAGINATION -->
+    {% if total_pages > 1 %}
+    <div class="d-flex justify-content-end gap-2">
+        {% set filter_args = {'q': search or None, 'status': status_filter or None, 'kpi': kpi_filter or None} %}
+        <a class="page-pill {{ 'disabled' if page <= 1 }}"
+            href="{{ url_for(list_endpoint, page=page-1, **filter_args) }}">
+            <i class="fa-solid fa-chevron-left"></i>
+        </a>
+        {% for n in range(1, total_pages + 1) %}
+        <a class="page-pill {{ 'active' if n == page }}" href="{{ url_for(list_endpoint, page=n, **filter_args) }}">
+            {{ n }}
+        </a>
+        {% endfor %}
+        <a class="page-pill {{ 'disabled' if page >= total_pages }}"
+            href="{{ url_for(list_endpoint, page=page+1, **filter_args) }}">
+            <i class="fa-solid fa-chevron-right"></i>
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- CREATE PROJECT MODAL -->
+{% if not is_storage %}
+<div class="modal fade" id="createProjectModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="post" class="modal-content" style="border-radius: 20px; border: 0;">
+            <div class="modal-header border-0 px-4 pt-4 pb-2">
+                <div>
+                    <h5 class="modal-title fw-bold text-dark mb-0">New Master Project</h5>
+                    <div class="text-muted small">Add a parent project to group PRJs</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4">
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-dark small mb-1">Title Master Project <span
+                            class="text-danger">*</span></label>
+                    <input class="form-control apple-input" name="name" placeholder="e.g. ABC Building Project"
+                        required>
+                </div>
+                <div class="mb-3 position-relative" id="mpClientPicker">
+                    <label class="form-label fw-bold text-dark small mb-1">Choose Client / Site <span
+                            class="text-danger">*</span></label>
+                    <input type="hidden" name="client_id" id="mpClientId" required>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"
+                            style="border-radius: 12px 0 0 12px; border-color: #e2e8f0;">
+                            <i class="fa-solid fa-building text-muted"></i>
+                        </span>
+                        <input class="form-control apple-input" id="mpClientSearch"
+                            placeholder="Type a client name or PIC..." autocomplete="off" onfocus="filterMpClients()"
+                            oninput="filterMpClients()" style="border-radius: 0 12px 12px 0 !important;">
+                    </div>
+                    <div id="mpClientDropdown" class="position-absolute bg-white border shadow-lg w-100 mt-1 d-none"
+                        style="z-index: 1060; border-radius: 12px; max-height: 250px; overflow: auto;">
+                        <div class="px-3 py-2 bg-light small text-muted fw-semibold">Client List</div>
+                        {% for client in clients %}
+                        <div class="mp-client-option px-3 py-2 border-top" data-id="{{ client.id }}"
+                            data-search="{{ client.company_name|lower }} {{ (client.pic_name or '')|lower }} {{ (client.address or '')|lower }}"
+                            data-name="{{ client.company_name }}" data-address="{{ client.address or '' }}">
+                            <strong>{{ client.company_name }}</strong>
+                            {% if client.pic_name %}<div class="small text-muted">PIC: {{ client.pic_name }}</div>{%
+                            endif %}
+                            {% if client.address %}<div class="small text-muted text-truncate"><i
+                                    class="fa-solid fa-location-dot text-danger me-1"></i>{{ client.address }}</div>{%
+                            endif %}
+                        </div>
+                        {% endfor %}
+                        <div id="mpNoClient" class="p-3 text-center text-muted small d-none">No client found.
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-dark small mb-1">Project Address</label>
+                    <textarea class="form-control apple-input bg-light" id="mpAddress" rows="2" disabled
+                        placeholder="Choose a client / site first"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-dark small mb-1">Work Scope</label>
+                    <textarea class="form-control apple-input" name="work_scope" rows="3"
+                        placeholder="Quotation code or project task title..."></textarea>
+                </div>
+                <div>
+                    <label class="form-label fw-bold text-dark small mb-1">Notes</label>
+                    <textarea class="form-control apple-input" name="notes" rows="2"
+                        placeholder="Internal project notes..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4">
+                <button type="button" class="btn btn-mac-secondary btn-apple-pill"
+                    data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-mac-primary btn-apple-pill">Save Master Project</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- EDIT / DETAIL MODAL -->
+{% for project in projects %}
+<div class="modal fade" id="editProject{{ project.id }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <form method="post" action="{{ url_for('documents.update_master_project', project_id=project.id) }}"
+            class="modal-content mp-edit-form"
+            data-active-prjs="{{ active_prjs_by_project.get(project.id, []) | tojson | forceescape }}"
+            data-name="{{ project.name }}" data-current-status="{{ project.status }}"
+            data-upcoming-blocks="{{ upcoming_blocks_by_project.get(project.id, 0) }}"
+            style="border-radius: 20px; border: 0;">
+            <div class="modal-header border-0 px-4 pt-4 pb-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="apple-link-icon-badge">
+                        <i class="fa-solid fa-folder-open text-primary"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold text-dark mb-0">Detail Master Project</h5>
+                        <div class="text-muted small"></div>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4">
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-dark small mb-1">Title Project <span
+                            class="text-danger">*</span></label>
+                    <input class="form-control apple-input" name="name" value="{{ project.name }}" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-dark small mb-1">Client / Site</label>
+                    <input class="form-control apple-input bg-light" value="{{ project.client.company_name }}" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-dark small mb-1">Work Scope</label>
+                    <textarea class="form-control apple-input" name="work_scope" rows="3"
+                        placeholder="Quotation code or project task title...">{{ project.work_scope or '' }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-dark small mb-1">Notes</label>
+                    <textarea class="form-control apple-input" name="notes" rows="2"
+                        placeholder="Add notes if any...">{{ project.notes or '' }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-dark small mb-1">Status</label>
+                    <select class="form-select apple-input" name="status">
+                        <option value="Online" {{ 'selected' if project.status=='Online' else '' }}>Online</option>
+                        <option value="Hold" {{ 'selected' if project.status=='Hold' else '' }}>Hold</option>
+                        <option value="Completed" {{ 'selected' if project.status=='Completed' else '' }}>Completed</option>
+                    </select>
+                    <div class="form-text small">Hold: its PRJs are hidden from Scheduling and the technician app;
+                        the PRJ statuses do not change.</div>
+                </div>
+
+                <!-- HIGHLIGHTED APPLE LINKED PRJ SECTION -->
+                <div class="apple-prj-highlight-card">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="apple-link-icon-badge">
+                                <i class="fa-solid fa-link text-primary"></i>
+                            </span>
+                            <span class="apple-prj-label">
+                                Linked PRJs ({{ project.prjs|length }}):
+                            </span>
+                        </div>
+                        <span class="badge apple-count-pill font-monospace">
+                            {{ project.prjs|length }} PRJ
+                        </span>
+                    </div>
+                    {% set kpi = kpi_by_project[project.id] %}
+                    {% if kpi.prjs %}
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2 p-2 bg-white"
+                        style="border-radius: 12px; border: 1px solid #e2e8f0;">
+                        <div class="small"><span class="text-muted fw-semibold">KPI Project:</span>
+                            <span class="fw-bold">Estimated {{ kpi.total_est }} Days | Actual: {{ kpi.total_real }}
+                                Days</span>
+                        </div>
+                        {{ kpi_badge(kpi) }}
+                    </div>
+                    <div class="table-responsive bg-white" style="border-radius: 12px; border: 1px solid #e2e8f0;">
+                        <table class="kpi-table">
+                            <thead>
+                                <tr>
+                                    <th>Document</th>
+                                    <th>Estimated</th>
+                                    <th>Actual</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in kpi.prjs %}
+                                <tr>
+                                    <td>
+                                        {% if can_open(row.status) %}
+                                        <a href="{{ url_for('documents.view_doc', doc_type='prj', doc_id=row.id) }}"
+                                            target="_blank" class="font-monospace fw-bold text-decoration-none">{{
+                                            row.number }}</a>
+                                        {% else %}
+                                        <span class="font-monospace fw-bold">{{ row.number }}</span>
+                                        {% endif %}
+                                        <div class="kpi-dates">PRJ &middot; {{ row.status }}</div>
+                                    </td>
+                                    {{ kpi_cells(row) }}
+                                </tr>
+                                {% for child in row.children %}
+                                <tr class="kpi-child">
+                                    <td style="padding-left: 24px;">
+                                        <i class="fa-solid fa-turn-up fa-rotate-90 text-muted me-1"
+                                            style="font-size: 10px;"></i>
+                                        {% if can_open(child.status) %}
+                                        <a href="{{ url_for('documents.view_doc', doc_type='xprj', doc_id=child.id) }}"
+                                            target="_blank" class="font-monospace text-decoration-none">{{ child.number
+                                            }}</a>
+                                        {% else %}
+                                        <span class="font-monospace">{{ child.number }}</span>
+                                        {% endif %}
+                                        <div class="kpi-dates">XPRJ &middot; {{ child.status }}</div>
+                                    </td>
+                                    {{ kpi_cells(child) }}
+                                </tr>
+                                {% endfor %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-muted small fst-italic py-1">
+                        <i class="fa-solid fa-circle-info me-1 text-muted"></i>No active PRJ linked yet
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4">
+                <button type="button" class="btn btn-mac-secondary btn-apple-pill"
+                    data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-mac-primary btn-apple-pill">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endfor %}
+
+<!-- JAVASCRIPT FOR CLIENT PICKER -->
+{% if not is_storage %}
+<script>
+    const mpSearch = document.getElementById('mpClientSearch'), mpDropdown = document.getElementById('mpClientDropdown');
+    function filterMpClients() { mpDropdown.classList.remove('d-none'); const q = mpSearch.value.toLowerCase().trim(); let count = 0; document.querySelectorAll('.mp-client-option').forEach(el => { const show = !q || el.dataset.search.includes(q); el.classList.toggle('d-none', !show); if (show) count++ }); document.getElementById('mpNoClient').classList.toggle('d-none', count !== 0) }
+    document.querySelectorAll('.mp-client-option').forEach(el => el.addEventListener('click', () => { document.getElementById('mpClientId').value = el.dataset.id; mpSearch.value = el.dataset.name; mpSearch.classList.add('bg-light', 'fw-bold'); document.getElementById('mpAddress').value = el.dataset.address; document.getElementById('mpAddress').disabled = false; document.querySelectorAll('.mp-client-option').forEach(item => item.classList.toggle('selected', item === el)); mpDropdown.classList.add('d-none') }));
+    document.addEventListener('click', event => { const picker = document.getElementById('mpClientPicker'); if (picker && !picker.contains(event.target)) mpDropdown.classList.add('d-none') });
+</script>
+{% endif %}
+<script>
+    // A project closes only after each of its PRJs is Completed or Void; closing never changes a PRJ.
+    // Hold and closing ask for confirmation first.
+    document.querySelectorAll('.mp-edit-form').forEach(form => {
+        form.addEventListener('submit', event => {
+            const target = form.querySelector('[name="status"]')?.value;
+            const current = form.dataset.currentStatus;
+            if (target === current) return;
+
+            if (target === 'Completed') {
+                let activePrjs = [];
+                try { activePrjs = JSON.parse(form.dataset.activePrjs || '[]'); } catch (error) { activePrjs = []; }
+                if (activePrjs.length) {
+                    event.preventDefault();
+                    const prjList = activePrjs.map(prj => `- PRJ ${prj.number} (status: ${prj.status})`).join('\n');
+                    window.alert(
+                        `This Master Project cannot be closed yet because it still has active PRJs:\n\n${prjList}\n\n` +
+                        'Complete or void those PRJs first, each from its own page.'
+                    );
+                    return;
+                }
+                if (!window.confirm(`Close Master Project "${form.dataset.name}" as Completed?`)) event.preventDefault();
+                return;
+            }
+
+            if (target === 'Hold') {
+                const blocks = parseInt(form.dataset.upcomingBlocks || '0', 10);
+                const message = `Hold Master Project "${form.dataset.name}"?\n\n` +
+                    'Its PRJs are hidden from Scheduling and the technician app until the project is Online again. ' +
+                    'The PRJ statuses do not change.' +
+                    (blocks ? `\n\n${blocks} technician schedule blocks from today on will be deleted; past schedules are kept.` : '');
+                if (!window.confirm(message)) event.preventDefault();
+            }
+        });
+    });
+</script>
+{% endblock %}

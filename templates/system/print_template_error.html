@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Error</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 32px;
+            font-family: -apple-system, 'Segoe UI', Arial, sans-serif;
+            background: #ffffff;
+            color: #1d1d1f;
+        }
+
+        .error-box {
+            border: 1px solid #fecaca;
+            background: #fef2f2;
+            border-radius: 12px;
+            padding: 20px 24px;
+        }
+
+        .error-title {
+            font-weight: 700;
+            color: #dc2626;
+            margin-bottom: 8px;
+        }
+
+        .error-detail {
+            font-family: Consolas, monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-box">
+        <div class="error-title">The template cannot be displayed</div>
+        <div class="error-detail">{{ error }}</div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!-- EXPORT PERIOD POPUP: one link per period (documents.routes._export_links), each with the filters on screen -->
+<div class="modal fade" id="exportPeriodModal" tabindex="-1" aria-labelledby="exportPeriodModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold" id="exportPeriodModalLabel">
+                    <i class="fa-solid fa-file-arrow-down text-success me-2"></i> Export Excel
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-3">Choose a period by Document Date. The active filters are applied too.</p>
+                <div class="d-grid gap-2">
+                    {% for label, link in export_links %}
+                    <a href="{{ link }}" class="btn btn-mac-secondary export-period-link" style="border-radius: 10px;">{{ label }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // The download starts in the background, so close the popup ourselves.
+    document.querySelectorAll('.export-period-link').forEach(link => link.addEventListener('click', () => {
+        bootstrap.Modal.getInstance(document.getElementById('exportPeriodModal'))?.hide();
+    }));
+</script>

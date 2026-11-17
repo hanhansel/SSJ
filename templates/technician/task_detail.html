@@ -1,0 +1,648 @@
+{% extends "technician/technician_base.html" %}
+{% block page_title %}{{ doc_label }} {{ doc.display_no }} — SSJ{% endblock %}
+
+{% block tech_extra_styles %}
+/* ============================================
+TASK DETAIL PAGE
+============================================ */
+.td-back-row {
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin-bottom: 18px;
+}
+
+/* Task header card */
+.td-header-card {
+background: #ffffff;
+border-radius: 20px;
+padding: 20px;
+margin-bottom: 14px;
+border: 1px solid rgba(0,0,0,0.05);
+box-shadow: 0 2px 14px rgba(0,0,0,0.05);
+}
+.td-client-name {
+font-size: 20px;
+font-weight: 800;
+color: var(--tech-text);
+letter-spacing: -0.3px;
+margin-bottom: 4px;
+}
+.td-doc-no { font-size: 12px; font-family: 'Courier New', monospace; color: var(--tech-muted); }
+.td-address {
+font-size: 12.5px;
+color: var(--tech-muted);
+margin: 8px 0;
+display: flex;
+align-items: flex-start;
+gap: 5px;
+}
+.td-address i { color: #ef4444; font-size: 11px; margin-top: 2px; }
+
+.td-pic-row {
+display: flex;
+align-items: center;
+justify-content: space-between;
+background: #f8fafc;
+border-radius: 12px;
+padding: 10px 14px;
+margin: 10px 0;
+font-size: 13px;
+}
+
+.td-section-label {
+font-size: 12px;
+font-weight: 700;
+color: var(--tech-muted);
+text-transform: uppercase;
+letter-spacing: 0.5px;
+margin-bottom: 6px;
+margin-top: 14px;
+display: block;
+}
+.td-task-desc {
+font-size: 13.5px;
+color: var(--tech-text-2);
+line-height: 1.65;
+white-space: pre-line;
+}
+
+/* Revision alert */
+.td-revision-alert {
+background: #fef2f2;
+border: 1px solid #fca5a5;
+border-radius: 16px;
+padding: 16px;
+margin-bottom: 14px;
+display: flex;
+gap: 12px;
+align-items: flex-start;
+}
+.td-revision-icon { font-size: 20px; color: #ef4444; flex-shrink: 0; }
+.td-revision-title { font-size: 14px; font-weight: 700; color: #991b1b; margin-bottom: 4px; }
+.td-revision-note { font-size: 13px; color: #b91c1c; }
+
+/* Upload section */
+.td-upload-card {
+background: #ffffff;
+border-radius: 20px;
+padding: 20px;
+margin-bottom: 14px;
+border: 1px solid rgba(0,0,0,0.05);
+box-shadow: 0 2px 14px rgba(0,0,0,0.05);
+}
+.td-upload-title {
+font-size: 16px;
+font-weight: 800;
+color: var(--tech-text);
+margin-bottom: 16px;
+display: flex;
+align-items: center;
+gap: 8px;
+}
+.td-upload-title i { color: var(--tech-primary); }
+
+/* Drop zone */
+.td-drop-zone {
+border: 2px dashed #d1d5db;
+border-radius: 16px;
+padding: 24px 16px;
+text-align: center;
+cursor: pointer;
+background: #fafafa;
+transition: border-color 0.2s ease, background 0.2s ease;
+margin-bottom: 12px;
+}
+.td-drop-zone:hover, .td-drop-zone.drag-over {
+border-color: var(--tech-primary);
+background: #eff6ff;
+}
+.td-drop-zone i { font-size: 28px; color: var(--tech-muted); display: block; margin-bottom: 6px; }
+.td-drop-zone p { font-size: 13.5px; color: var(--tech-muted); font-weight: 500; margin-bottom: 2px; }
+.td-drop-zone span { font-size: 12px; color: #b0b0bb; }
+
+/* Photo preview grid */
+.td-preview-grid {
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 8px;
+margin-bottom: 14px;
+}
+.td-thumb-wrap {
+position: relative;
+aspect-ratio: 1;
+}
+.td-thumb-wrap img {
+width: 100%; height: 100%;
+object-fit: cover;
+border-radius: 10px;
+border: 1px solid var(--tech-border);
+}
+.td-thumb-remove {
+position: absolute; top: -5px; right: -5px;
+width: 20px; height: 20px;
+background: #ef4444; color: #fff;
+border-radius: 50%; border: none; cursor: pointer;
+display: flex; align-items: center; justify-content: center;
+font-size: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.td-thumb-size {
+position: absolute; bottom: 3px; left: 3px;
+background: rgba(0,0,0,0.55); color: #fff;
+font-size: 9px; padding: 1px 4px; border-radius: 4px; font-weight: 600;
+}
+
+/* Progress bar */
+.td-progress-wrap { display: none; margin-bottom: 14px; }
+.td-progress-track { height: 6px; background: #f2f2f7; border-radius: 10px; overflow: hidden; }
+.td-progress-fill {
+height: 100%; width: 0%;
+background: linear-gradient(90deg, var(--tech-primary), #00c6ff);
+border-radius: 10px; transition: width 0.2s ease;
+}
+.td-progress-label { font-size: 12px; color: var(--tech-muted); text-align: center; margin-top: 6px; }
+
+/* Previous reports */
+.td-reports-title {
+font-size: 16px;
+font-weight: 800;
+color: var(--tech-text);
+margin-bottom: 12px;
+display: flex;
+align-items: center;
+gap: 8px;
+}
+.td-reports-title i { color: var(--tech-muted); }
+
+.td-report-item {
+background: #f8fafc;
+border-radius: 14px;
+padding: 14px;
+margin-bottom: 10px;
+border: 1px solid var(--tech-border);
+}
+.td-report-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 8px;
+}
+.td-report-time { font-size: 12px; color: var(--tech-muted); }
+.td-report-status { font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+.td-report-status-approved { background: #ecfdf5; color: #065f46; }
+.td-report-status-rejected { background: #fef2f2; color: #991b1b; }
+.td-report-status-pending { background: #fffbeb; color: #92400e; }
+.td-report-text { font-size: 13px; color: var(--tech-text-2); white-space: pre-line; margin-bottom: 8px; }
+.td-report-photos { display: flex; flex-wrap: wrap; gap: 6px; }
+.td-report-photo {
+width: 72px; height: 72px;
+object-fit: cover; border-radius: 8px;
+border: 1px solid var(--tech-border);
+cursor: pointer;
+transition: opacity 0.2s ease;
+}
+.td-report-photo:hover { opacity: 0.85; }
+{% endblock %}
+
+{% block tech_content %}
+<!-- BACK BUTTON + DOC TYPE CHIP -->
+<div class="td-back-row">
+    <a href="{{ url_for('technician.documents') }}" class="tech-btn tech-btn-ghost tech-btn-sm">
+        <i class="fa-solid fa-arrow-left"></i> Documents
+    </a>
+    <span style="font-size: 11.5px; font-weight: 700; padding: 4px 12px; border-radius: 20px;
+                 background: {{ doc_color }}1a; color: {{ doc_color }}; border: 1px solid {{ doc_color }}33;">
+        {{ doc_label }}
+    </span>
+</div>
+
+<!-- REVISION ALERT -->
+{% if doc.status == 'Pending Approval' %}
+<div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 16px; padding: 14px 16px; margin-bottom: 14px; display: flex; gap: 12px; align-items: flex-start;">
+    <div style="font-size: 20px; color: #2563eb; flex-shrink: 0;"><i class="fa-solid fa-clock-rotate-left"></i></div>
+    <div>
+        <div style="font-size: 14px; font-weight: 700; color: #1e40af; margin-bottom: 3px;">Task Finished (Awaiting Admin Approval)</div>
+        <div style="font-size: 12.5px; color: #3b82f6; line-height: 1.5;">
+            The final report can still be replaced until an Admin approves it. Teammates still on duty today can also send a <strong>Daily Progress</strong> report.
+        </div>
+    </div>
+</div>
+{% elif doc.status == 'Completed' %}
+<div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 16px; padding: 14px 16px; margin-bottom: 14px; display: flex; gap: 12px; align-items: flex-start;">
+    <div style="font-size: 20px; color: #10b981; flex-shrink: 0;"><i class="fa-solid fa-circle-check"></i></div>
+    <div>
+        <div style="font-size: 14px; font-weight: 700; color: #065f46; margin-bottom: 3px;">Task Completed & Approved</div>
+        <div style="font-size: 12.5px; color: #047857;">All of the work has been approved by an Admin.</div>
+    </div>
+</div>
+{% endif %}
+
+<!-- TASK INFO CARD -->
+<div class="td-header-card">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+        <h2 class="td-client-name">{{ doc.client.company_name if doc.client else '–' }}</h2>
+        <span class="td-doc-no">{{ doc.display_no }}</span>
+    </div>
+
+    {% set work_address = doc.site_address or (doc.client.address if doc.client else '') %}
+    {% if work_address %}
+    <div class="td-address">
+        <i class="fa-solid fa-location-dot"></i>
+        {{ work_address }}
+    </div>
+    {% endif %}
+
+    {% if doc.client and doc.client.pic_name %}
+    <div class="td-pic-row">
+        <span><i class="fa-solid fa-user" style="color: var(--tech-primary); margin-right: 5px;"></i>
+            PIC: <strong>{{ doc.client.pic_name }}</strong></span>
+        {% if doc.client.pic_phone %}
+        <span style="font-size: 12.5px; color: var(--tech-muted); font-weight: 500;">
+            <i class="fa-solid fa-phone me-1 text-success"></i> {{ doc.client.pic_phone }}
+        </span>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- TEAM ASSIGNMENT INFO -->
+    <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid #f5f5f7;">
+        <span class="td-section-label" style="margin-top: 0; margin-bottom: 6px;">
+            <i class="fa-solid fa-users text-primary me-1"></i> Assigned Technician Team
+        </span>
+
+        <div
+            style="background: #f8fafc; border-radius: 12px; padding: 10px 14px; border: 1px solid var(--tech-border);">
+            <div
+                style="font-size: 13px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
+                <span style="color: var(--tech-muted); font-size: 12px;"><i
+                        class="fa-solid fa-user-group text-primary me-1"></i> Technicians Involved:</span>
+                <strong style="color: #0f172a;">
+                    {% if all_team %}
+                    {{ all_team | join(', ') }}
+                    {% else %}
+                    –
+                    {% endif %}
+                </strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if can_submit_report %}
+<!-- UPLOAD FORM CARD -->
+<div class="td-upload-card">
+    <h3 class="td-upload-title">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        Upload Work Evidence & Reports
+    </h3>
+
+    {% if doc.status == 'Completed' %}
+    <!-- Approved tasks can only receive daily logs. -->
+    <div style="background: #eff6ff; border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; font-size: 12.5px; color: #1e40af; display: flex; align-items: center; justify-content: space-between; border: 1px solid #dbeafe;">
+        <span><i class="fa-solid fa-pen-to-square me-1"></i> Mode: <strong>Daily Progress / Work Log</strong></span>
+        <span class="badge bg-primary text-white" style="font-size: 10.5px; padding: 4px 8px; border-radius: 8px;">Final Report Approved</span>
+    </div>
+    {% else %}
+    <!-- Toggle report mode: Daily (Left) vs Final (Right) -->
+    <div style="display: flex; background: #f3f4f6; border-radius: 12px; padding: 3px; gap: 3px; margin-bottom: 14px;">
+        <button type="button" id="tdBtnDaily" class="tech-btn"
+            style="flex: 1; border-radius: 9px; padding: 7px 0; font-size: 12.5px; font-weight: 700; background: #ffffff; color: var(--tech-primary); box-shadow: 0 1px 4px rgba(0,0,0,0.08);"
+            onclick="setTdMode('daily')">
+            <i class="fa-solid fa-pen-to-square me-1"></i> Daily Progress
+        </button>
+        <button type="button" id="tdBtnFinal" class="tech-btn"
+            style="flex: 1; border-radius: 9px; padding: 7px 0; font-size: 12.5px; font-weight: 700; background: transparent; color: #6b7280;"
+            onclick="setTdMode('final')">
+            <i class="fa-solid fa-circle-check me-1"></i> Finish & Upload
+        </button>
+    </div>
+    {% endif %}
+
+    <form id="reportForm" method="POST" action="{{ url_for('technician.submit_report') }}"
+        enctype="multipart/form-data">
+        <input type="hidden" name="doc_type" value="{{ doc_type }}">
+        <input type="hidden" name="doc_id" value="{{ doc.id }}">
+        <input type="hidden" id="tdReportType" name="report_type" value="daily">
+
+        <!-- Report title (required) -->
+        <label class="tech-label" for="tdReportTitle" style="margin-bottom: 6px;">Report Title <span style="color: #ef4444;">*</span></label>
+        <input type="text" id="tdReportTitle" name="report_title" class="tech-input" maxlength="200" required
+            style="margin-bottom: 14px;" placeholder="e.g. Fibre cable pulled on floor 2">
+
+        <!-- Drop zone -->
+        <div class="td-drop-zone" id="tdDropZone" onclick="document.getElementById('tdPhotoInput').click()"
+            ondragover="event.preventDefault(); this.classList.add('drag-over')"
+            ondragleave="this.classList.remove('drag-over')" ondrop="handleTdDrop(event)">
+            <i class="fa-solid fa-images"></i>
+            <p>Choose photos from the device</p>
+            <span>Max. 10 photos</span>
+            <input type="file" id="tdPhotoInput" accept="image/*" multiple
+                onchange="handleTdPhotos(this.files)">
+        </div>
+
+        <!-- Preview grid -->
+        <div class="td-preview-grid" id="tdPreviewGrid"></div>
+
+        {% if doc_type == 'prj' %}
+        <!-- HO PHYSICAL PHOTO UPLOAD SECTION (PRJ FINAL MODE ONLY) -->
+        <div id="hoUploadSection" style="display: none; background: #faf5ff; border: 1.5px dashed #c084fc; border-radius: 14px; padding: 14px; margin-bottom: 14px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                <label class="tech-label" style="margin-bottom: 0; color: #7e22ce; font-weight: 700;">
+                    <i class="fa-solid fa-file-signature me-1"></i> Photo of the Signed HO Sheet <span style="color: #ef4444;">*</span>
+                </label>
+                <span class="badge" style="background: #f3e8ff; color: #7e22ce; font-size: 11px;">Required for PRJ</span>
+            </div>
+            <p style="font-size: 11.5px; color: #6b21a8; margin: 0 0 10px 0;">
+                Upload a clear photo of the HO sheet signed by the client on site.
+            </p>
+
+            {% if doc.ho and doc.ho.photos %}
+            <div style="margin-bottom: 8px; font-size: 12px; color: #15803d; font-weight: 600;">
+                <i class="fa-solid fa-circle-check me-1"></i> The HO already has {{ doc.ho.photos|length }} photo(s) (upload again if there is a revision).
+            </div>
+            {% endif %}
+
+            <div class="td-drop-zone" id="hoDropZone" onclick="document.getElementById('hoPhotoInput').click()"
+                style="background: #ffffff; border-color: #d8b4fe; padding: 16px 12px;">
+                <i class="fa-solid fa-camera" style="color: #9333ea; font-size: 26px;"></i>
+                <p style="color: #6b21a8; margin: 4px 0 2px 0;">Choose / Take HO Photo</p>
+                <span style="color: #a855f7;">Phone camera or gallery</span>
+                <input type="file" id="hoPhotoInput" accept="image/*" multiple
+                    onchange="handleHoPhotos(this.files)" style="display: none;">
+            </div>
+
+            <div class="td-preview-grid" id="hoPreviewGrid" style="margin-top: 8px;"></div>
+        </div>
+        {% endif %}
+
+        <!-- Progress bar -->
+        <div class="td-progress-wrap" id="tdProgressWrap">
+            <div class="td-progress-track">
+                <div class="td-progress-fill" id="tdProgressFill"></div>
+            </div>
+            <div class="td-progress-label" id="tdProgressLabel">Uploading...</div>
+        </div>
+
+        <!-- Report notes -->
+        <label class="tech-label" for="tdReportText" id="tdReportLabel" style="margin-bottom: 6px;">Today's Progress
+            Notes</label>
+        <textarea id="tdReportText" name="report_text" class="tech-input" style="margin-bottom: 14px;"
+            placeholder="Describe today's work or any problems…"></textarea>
+
+        <button type="button" id="tdSubmitBtn" class="tech-btn tech-btn-primary tech-btn-lg tech-btn-full"
+            onclick="submitTdReport()">
+            <i class="fa-solid fa-paper-plane"></i>
+            Save Progress
+        </button>
+    </form>
+</div>
+{% endif %}
+
+<!-- PREVIOUS REPORTS & DAILY LOGS -->
+{% if reports %}
+<div style="margin-top: 4px; margin-bottom: 20px;">
+    <h3 class="td-reports-title">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+        Work Report History ({{ reports|length }})
+    </h3>
+
+    {% for r in reports %}
+    <div class="td-report-item">
+        <div class="td-report-header">
+            <span class="td-report-time">
+                <i class="fa-regular fa-clock" style="margin-right: 3px;"></i>
+                {{ (r.uploaded_at | format_datetime) if r.uploaded_at else '–' }}
+            </span>
+            <div style="display: flex; gap: 4px; align-items: center;">
+                {% if r.report_type == 'daily' or r.status == 'Daily' %}
+                <span class="td-report-status" style="background: #eff6ff; color: #1d4ed8;"><i
+                        class="fa-solid fa-pen-to-square"></i> Daily Progress</span>
+                {% elif r.status == 'Approved' %}
+                <span class="td-report-status td-report-status-approved"><i class="fa-solid fa-check"></i>
+                    Approved</span>
+                {% else %}
+                <span class="td-report-status td-report-status-pending"><i class="fa-solid fa-clock"></i> Pending Approval</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div style="font-size: 12px; font-weight: 600; color: #1e293b; margin-bottom: 6px;">
+            <i class="fa-solid fa-user text-primary me-1"></i> {{ r.uploader.name if r.uploader else 'Technician' }}
+        </div>
+
+
+
+        {% if r.report_title %}
+        <div style="font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">{{ r.report_title }}</div>
+        {% endif %}
+
+        {% if r.report_text %}
+        <p class="td-report-text">{{ r.report_text }}</p>
+        {% endif %}
+
+        {% if r.photo_list %}
+        <div class="td-report-photos">
+            {% for photo in r.photos %}
+            <a href="{{ url_for('technician.protected_media', stored_path=photo.stored_path) }}" target="_blank"
+                title="{{ ('Taken ' ~ (photo.taken_at | format_datetime)) if photo.taken_at else '' }}" style="text-decoration: none;">
+                <img src="{{ url_for('technician.protected_media', stored_path=photo.stored_path) }}" class="td-report-photo" alt="photo evidence">
+                {% if photo.taken_at %}<div style="width: 72px; font-size: 10px; color: var(--tech-muted); line-height: 1.2; margin-top: 2px;">{{ photo.taken_at | format_datetime }}</div>{% endif %}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block tech_scripts %}
+<script>
+    var tdBlobs = [];
+
+    function setTdMode(mode) {
+        document.getElementById('tdReportType').value = mode;
+        var btnFinal = document.getElementById('tdBtnFinal');
+        var btnDaily = document.getElementById('tdBtnDaily');
+        var label = document.getElementById('tdReportLabel');
+        var btn = document.getElementById('tdSubmitBtn');
+
+        if (mode === 'daily') {
+            btnDaily.style.background = '#ffffff';
+            btnDaily.style.color = 'var(--tech-primary)';
+            btnDaily.style.boxShadow = '0 1px 4px rgba(0,0,0,0.08)';
+            btnFinal.style.background = 'transparent';
+            btnFinal.style.color = '#6b7280';
+            btnFinal.style.boxShadow = 'none';
+            label.textContent = "Today's Progress Notes";
+            btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Save Progress';
+            var hoSec = document.getElementById('hoUploadSection');
+            if (hoSec) hoSec.style.display = 'none';
+        } else {
+            btnFinal.style.background = '#ffffff';
+            btnFinal.style.color = 'var(--tech-primary)';
+            btnFinal.style.boxShadow = '0 1px 4px rgba(0,0,0,0.08)';
+            btnDaily.style.background = 'transparent';
+            btnDaily.style.color = '#6b7280';
+            btnDaily.style.boxShadow = 'none';
+            label.textContent = 'Task Completion Notes';
+            btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Complete Task';
+            var hoSec = document.getElementById('hoUploadSection');
+            if (hoSec) hoSec.style.display = 'block';
+        }
+    }
+
+    function handleTdDrop(e) {
+        e.preventDefault();
+        document.getElementById('tdDropZone').classList.remove('drag-over');
+        if (e.dataTransfer && e.dataTransfer.files.length > 0) {
+            handleTdPhotos(e.dataTransfer.files);
+        }
+    }
+
+    async function handleTdPhotos(files) {
+        var grid = document.getElementById('tdPreviewGrid');
+        var fileArray = Array.from(files);
+
+        if (tdBlobs.length + fileArray.length > 10) {
+            showToast('At most 10 photos per report.', 'danger');
+            return;
+        }
+
+        for (var i = 0; i < fileArray.length; i++) {
+            var file = fileArray[i];
+            try {
+                var blob = await compressImage(file);
+                var idx = tdBlobs.length;
+                tdBlobs.push({ blob: blob, name: file.name.replace(/\.[^/.]+$/, '') + '.jpg' });
+
+                var url = URL.createObjectURL(blob);
+                var wrap = document.createElement('div');
+                wrap.className = 'td-thumb-wrap';
+                wrap.dataset.idx = idx;
+                wrap.innerHTML =
+                    '<img src="' + url + '" alt="photo">' +
+                    '<button type="button" class="td-thumb-remove" onclick="removeTdThumb(' + idx + ')">' +
+                    '<i class="fa-solid fa-xmark"></i>' +
+                    '</button>' +
+                    '<span class="td-thumb-size">' + (blob.size / 1024).toFixed(0) + 'KB</span>';
+                grid.appendChild(wrap);
+            } catch (e) {
+                console.error('Compression error:', e);
+            }
+        }
+    }
+
+    function removeTdThumb(idx) {
+        tdBlobs[idx] = null;
+        var wrap = document.querySelector('.td-thumb-wrap[data-idx="' + idx + '"]');
+        if (wrap) { wrap.style.opacity = '0.3'; wrap.style.pointerEvents = 'none'; }
+    }
+
+    var hoBlobs = [];
+
+    async function handleHoPhotos(files) {
+        var grid = document.getElementById('hoPreviewGrid');
+        var fileArray = Array.from(files);
+
+        for (var i = 0; i < fileArray.length; i++) {
+            var file = fileArray[i];
+            try {
+                var blob = await compressImage(file);
+                var idx = hoBlobs.length;
+                hoBlobs.push({ blob: blob, name: 'ho_' + file.name.replace(/\.[^/.]+$/, '') + '.jpg' });
+
+                var url = URL.createObjectURL(blob);
+                var wrap = document.createElement('div');
+                wrap.className = 'td-thumb-wrap';
+                wrap.dataset.bidx = idx;
+                wrap.innerHTML =
+                    '<img src="' + url + '" alt="HO photo">' +
+                    '<button type="button" class="td-thumb-remove" onclick="removeHoThumb(' + idx + ')">' +
+                    '<i class="fa-solid fa-xmark"></i>' +
+                    '</button>' +
+                    '<span class="td-thumb-size">' + (blob.size / 1024).toFixed(0) + 'KB</span>';
+                grid.appendChild(wrap);
+            } catch (e) {
+                console.error('Ho Compression error:', e);
+            }
+        }
+    }
+
+    function removeHoThumb(idx) {
+        hoBlobs[idx] = null;
+        var wrap = document.querySelector('.td-thumb-wrap[data-bidx="' + idx + '"]');
+        if (wrap) { wrap.style.opacity = '0.3'; wrap.style.pointerEvents = 'none'; }
+    }
+
+    function submitTdReport() {
+        var form = document.getElementById('reportForm');
+        var reportText = document.getElementById('tdReportText').value.trim();
+        var reportTitle = document.getElementById('tdReportTitle').value.trim();
+        var reportType = document.getElementById('tdReportType').value;
+        var activeBlobs = tdBlobs.filter(function (b) { return b !== null; });
+        var activeHoBlobs = hoBlobs.filter(function (b) { return b !== null; });
+
+        if (!reportTitle) {
+            showToast('Please fill in the report title.', 'danger');
+            document.getElementById('tdReportTitle').focus();
+            return;
+        }
+
+        if (activeBlobs.length === 0 && !reportText) {
+            showToast('Please add at least one photo or a report note.', 'danger');
+            return;
+        }
+
+        var isPrj = "{{ doc_type }}" === 'prj';
+        var hasExistingHo = {{ 'true' if (doc.ho and doc.ho.photos) else 'false' }};
+
+        if (isPrj && reportType === 'final' && activeHoBlobs.length === 0 && !hasExistingHo) {
+            showToast('A photo of the signed HO sheet must be uploaded to complete the PRJ.', 'danger');
+            return;
+        }
+
+        var formData = new FormData(form);
+        formData.delete('photos');
+        formData.delete('ho_photos');
+        activeBlobs.forEach(function (item) { formData.append('photos', item.blob, item.name); });
+        activeHoBlobs.forEach(function (item) { formData.append('ho_photos', item.blob, item.name); });
+
+        var btn = document.getElementById('tdSubmitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
+        document.getElementById('tdProgressWrap').style.display = 'block';
+
+        var xhr = new XMLHttpRequest();
+
+        xhr.upload.onprogress = function (e) {
+            if (e.lengthComputable) {
+                var pct = Math.round(e.loaded / e.total * 100);
+                document.getElementById('tdProgressFill').style.width = pct + '%';
+                document.getElementById('tdProgressLabel').textContent = 'Uploading... ' + pct + '%';
+            }
+        };
+
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                window.location.reload();
+            } else {
+                showToast('Could not upload the report. Please try again.', 'danger');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send Report';
+                document.getElementById('tdProgressWrap').style.display = 'none';
+            }
+        };
+
+        xhr.onerror = function () {
+            showToast('A network error occurred.', 'danger');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send Report';
+        };
+
+        xhr.open('POST', form.action);
+        xhr.send(formData);
+    }
+</script>
+{% endblock %}

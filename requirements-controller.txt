@@ -1,0 +1,4 @@
+# Install only on the trusted Windows server PC that runs the Controller UI.
+PySide6>=6.7
+requests>=2.31
+psycopg2-binary>=2.9.9
