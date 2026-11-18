@@ -1,0 +1,5 @@
+# Scheduling research (the scheduling-algorithms branch): the app's packages plus notebook tools.
+-r requirements.txt
+jupyter>=1.0
+nbstripout>=0.7
+matplotlib>=3.8
