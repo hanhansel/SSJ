@@ -2,9 +2,9 @@
 import unittest
 from datetime import date
 
-from apps.scheduling.engine.pipeline import run_engine
 from research.contract import engine_result, scheduled_item, unscheduled_item
 from research.evaluate import SOFT, UNSCHEDULED_PENALTY, score, summary, validate
+from research.reference.stub import run_stub
 from research.synthetic import Scenario, generate
 
 # The keys apps/scheduling/engine_input.build_task() gives every task.
@@ -68,7 +68,7 @@ class SyntheticDataTests(unittest.TestCase):
 class EvaluatorTests(unittest.TestCase):
     def test_the_public_stub_is_valid_and_pays_for_every_unscheduled_task(self):
         data = generate(seed=2, scenario=Scenario(n_tasks=5))
-        stub = run_engine(**data)
+        stub = run_stub(**data)
         self.assertEqual(validate(stub, data), [])
         self.assertEqual(score(stub, data).total, UNSCHEDULED_PENALTY * 5)
 

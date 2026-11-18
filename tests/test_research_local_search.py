@@ -3,11 +3,11 @@ import random
 import unittest
 from datetime import timedelta
 
-from apps.scheduling.engine.pipeline import run_engine
 from research.evaluate import score, validate
 from research.local_search import Change, Schedule, insert_move, replace_move
 from research.reference.greedy import run_greedy
 from research.reference.hill_climbing import hill_climb, run_hill_climbing, shift_move
+from research.reference.stub import run_stub
 from research.synthetic import generate
 
 
@@ -50,7 +50,7 @@ class ScheduleTests(unittest.TestCase):
         self.assertEqual(validate(self.schedule.to_result('test', 0.0), self.data), [])
 
     def test_insert_fills_an_empty_schedule(self):
-        schedule = Schedule(self.data, run_engine(**self.data))
+        schedule = Schedule(self.data, run_stub(**self.data))
         change = insert_move(schedule, random.Random(0))
         self.assertTrue(schedule.apply(change))
         self.assertEqual(len(schedule.placements), 1)

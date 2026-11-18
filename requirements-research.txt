@@ -1,6 +1,6 @@
-# Scheduling research (the scheduling-algorithms branch): the app's packages plus notebook tools.
--r requirements.txt
+# Everything the notebooks and research/ need. The SSJ app itself is not required.
+pandas>=2.2
+matplotlib>=3.8
 jupyter>=1.0
 nbstripout>=0.7
-matplotlib>=3.8
 optuna>=3.6
