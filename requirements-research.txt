@@ -3,3 +3,4 @@
 jupyter>=1.0
 nbstripout>=0.7
 matplotlib>=3.8
+optuna>=3.6

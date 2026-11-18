@@ -173,7 +173,8 @@ def _history(rng, scenario, technicians, clients):
 
     doc_types, shares = zip(*scenario.type_mix)
     visits, type_count, pairs = {}, {}, {}
-    for _ in range(scenario.history_documents):
+    documents = scenario.history_documents if len(ids) >= 2 else 0   # a team needs two people
+    for _ in range(documents):
         first = rng.choice(ids)
         if first in partner and rng.random() < 0.6:
             second = partner[first]
